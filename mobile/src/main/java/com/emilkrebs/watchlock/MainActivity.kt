@@ -8,12 +8,16 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.emilkrebs.watchlock.receivers.AdminReceiver
+import com.google.android.gms.tasks.Tasks
+import com.google.android.gms.wearable.Wearable
+
 
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var devicePolicyManager: DevicePolicyManager
-    lateinit var adminComponent: ComponentName
+    private lateinit var devicePolicyManager: DevicePolicyManager
+    private lateinit var adminComponent: ComponentName
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,5 +38,19 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
+}
+public fun sendMessage(context: Context, path: String, message: String) {
+    Thread {
+        run {
+            getNodes(context).forEach {
+                val messageApiClient = Wearable.getMessageClient(context)
+                Tasks.await(messageApiClient.sendMessage(it, path, message.toByteArray()))
+            }
 
+        }
+    }.start()
+}
+
+public fun getNodes(context: Context): Collection<String> {
+    return Tasks.await(Wearable.getNodeClient(context).connectedNodes).map { it.id }
 }

@@ -9,11 +9,10 @@ import com.google.android.gms.wearable.WearableListenerService
 
 class ResponseListenerService : WearableListenerService() {
     override fun onMessageReceived(messageEvent: MessageEvent) {
-        val message = String(messageEvent.data)
-        println(message)
         val intent = Intent()
         intent.action = ACTION_SEND
-        intent.putExtra("status", message)
+        intent.putExtra("data", messageEvent.data)
+        intent.putExtra("path", messageEvent.path)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 }

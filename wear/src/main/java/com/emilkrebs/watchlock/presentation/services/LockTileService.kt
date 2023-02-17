@@ -1,57 +1,76 @@
 package com.emilkrebs.watchlock.presentation.services
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.Intent.ACTION_SEND
-import android.content.IntentFilter
+import com.emilkrebs.watchlock.R
 import androidx.compose.ui.graphics.toArgb
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.wear.tiles.*
+import androidx.wear.tiles.DimensionBuilders.dp
+import androidx.wear.tiles.LayoutElementBuilders.Spacer
+import androidx.wear.tiles.ModifiersBuilders.Clickable
+import androidx.wear.tiles.TimelineBuilders.TimelineEntry
 import androidx.wear.tiles.material.Text
 import androidx.wear.tiles.material.Typography
 import com.emilkrebs.watchlock.presentation.MainActivity
-import com.emilkrebs.watchlock.presentation.sendMessage
 import com.emilkrebs.watchlock.presentation.theme.Purple200
 import com.emilkrebs.watchlock.presentation.theme.Purple500
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import androidx.wear.tiles.DimensionBuilders.dp
-import androidx.wear.tiles.LayoutElementBuilders.Spacer
-import androidx.wear.tiles.ModifiersBuilders.Clickable
-import androidx.wear.tiles.TimelineBuilders.TimeInterval
-import androidx.wear.tiles.TimelineBuilders.TimelineEntry
-import com.emilkrebs.watchlock.presentation.getNodes
-import com.emilkrebs.watchlock.presentation.isConnectedToPhone
+
 
 const val RESOURCES_VERSION = "1"
+const val ID_CLICK_REFRESH = "click_refresh"
+
 
 class LockTileService : TileService() {
+    private lateinit var phoneCommunicationService: PhoneCommunicationService;
+    private var isLoading: Boolean = false
+    private var lockStatus: LockStatus = LockStatus.UNKNOWN
+    override fun onCreate() {
+        super.onCreate()
+        phoneCommunicationService = PhoneCommunicationService(this)
+    }
 
-    var isPhoneLocked: Boolean = false
+    override fun onTileEnterEvent(requestParams: EventBuilders.TileEnterEvent) {
+        super.onTileEnterEvent(requestParams)
+        // request the lock status from the phone
+        requestUpdate()
+    }
 
     override fun onTileRequest(requestParams: RequestBuilders.TileRequest): ListenableFuture<TileBuilders.Tile> {
-        sendMessage(this, "/wearable/query", "lock_status")
-        LocalBroadcastManager.getInstance(this)
-            .registerReceiver(lockStatusReceiver, IntentFilter(ACTION_SEND))
-
-        val timeline = TimelineBuilders.Timeline.Builder()
-        timeline.addTimelineEntry(TimelineEntry.Builder()
-            .setLayout(LayoutElementBuilders.Layout.Builder().setRoot(notConnectedLayout()).build())
-//            .setValidity(TimeInterval.Builder().build())
-            .build()
-        )
-        timeline.addTimelineEntry(TimelineEntry.Builder()
-            .setLayout(LayoutElementBuilders.Layout.Builder().setRoot(mainLayout()).build())
-            .build()
-        )
-        return Futures.immediateFuture(
-            TileBuilders.Tile.Builder()
-                .setResourcesVersion(RESOURCES_VERSION)
-                // refresh every 30sec
-                .setFreshnessIntervalMillis(30 * 1000)
-                .setTimeline(timeline.build()).build()
-        )
+        // request the lock status from the phone
+        if (requestParams.state?.lastClickableId == ID_CLICK_REFRESH) {
+            requestUpdate()
+        }
+        if (isLoading) {
+            return Futures.immediateFuture(
+                TileBuilders.Tile.Builder()
+                    .setResourcesVersion(RESOURCES_VERSION)
+                    .setTimeline(
+                        TimelineBuilders.Timeline.Builder().addTimelineEntry(
+                            TimelineEntry.Builder()
+                                .setLayout(
+                                    LayoutElementBuilders.Layout.Builder().setRoot(loadingLayout())
+                                        .build()
+                                )
+                                .build()
+                        ).build()
+                    ).build()
+            )
+        } else {
+            return Futures.immediateFuture(
+                TileBuilders.Tile.Builder()
+                    .setResourcesVersion(RESOURCES_VERSION)
+                    .setTimeline(
+                        TimelineBuilders.Timeline.Builder().addTimelineEntry(
+                            TimelineEntry.Builder()
+                                .setLayout(
+                                    LayoutElementBuilders.Layout.Builder().setRoot(mainLayout())
+                                        .build()
+                                )
+                                .build()
+                        ).build()
+                    ).build()
+            )
+        }
     }
 
 
@@ -63,59 +82,27 @@ class LockTileService : TileService() {
         )
     }
 
-    private fun notConnectedLayout(): LayoutElementBuilders.LayoutElement {
+    private fun loadingLayout(): LayoutElementBuilders.LayoutElement {
         return LayoutElementBuilders.Column.Builder()
             .setWidth(DimensionBuilders.wrap())
             .setHeight(DimensionBuilders.wrap())
             .addContent(
-                Text.Builder(this, "Phone is not connected")
-                    .setColor(ColorBuilders.argb(0xFFFF0000.toInt()))
+                Text.Builder(this, "Loading...")
+                    .setColor(ColorBuilders.argb(0xFFFFFFFF.toInt()))
                     .setWeight(LayoutElementBuilders.FONT_WEIGHT_BOLD)
                     .setTypography(Typography.TYPOGRAPHY_TITLE3)
-                    .build()
-            )
-            .addContent(
-                Spacer.Builder()
-                    .setHeight(dp(12F))
-                    .build()
-            )
-            .addContent(
-                Text.Builder(this, "Refresh")
-                    .setColor(ColorBuilders.argb(0xFFFFFFFF.toInt()))
-                    .setWeight(LayoutElementBuilders.FONT_WEIGHT_NORMAL)
-                    .setTypography(Typography.TYPOGRAPHY_BODY1)
-                    .setModifiers(
-                        ModifiersBuilders.Modifiers.Builder()
-                            .setClickable(
-                                Clickable.Builder()
-                                    .setOnClick(
-                                        ActionBuilders.LoadAction.Builder().build()
-                                    )
-                                    .build()
-                            )
-                            .build()
-                    )
                     .build()
             )
             .build()
     }
 
-    private fun showLayout(): LayoutElementBuilders.LayoutElement {
-        var connected = isConnectedToPhone(this)
-        return if (!connected) {
-            notConnectedLayout()
-        } else {
-            mainLayout()
-        }
-    }
-
     private fun mainLayout(): LayoutElementBuilders.LayoutElement {
-        val buttonContent: String = if (isPhoneLocked) {
-            "Phone locked"
+        val buttonContent: String = if (lockStatus == LockStatus.LOCKED) {
+            getString(R.string.phone_locked)
         } else {
-            "Phone unlocked"
+            getString(R.string.phone_unlocked)
         }
-        val buttonColor: Int = if (isPhoneLocked) {
+        val buttonColor: Int = if (lockStatus == LockStatus.LOCKED) {
             Purple200.toArgb()
         } else {
             Purple500.toArgb()
@@ -132,22 +119,7 @@ class LockTileService : TileService() {
                     .build()
             )
             .addContent(
-                Text.Builder(this, "Refresh")
-                    .setColor(ColorBuilders.argb(0xFFFFFFFF.toInt()))
-                    .setWeight(LayoutElementBuilders.FONT_WEIGHT_NORMAL)
-                    .setTypography(Typography.TYPOGRAPHY_BODY1)
-                    .setModifiers(
-                        ModifiersBuilders.Modifiers.Builder()
-                            .setClickable(
-                                Clickable.Builder()
-                                    .setOnClick(
-                                        ActionBuilders.LoadAction.Builder().build()
-                                    )
-                                    .build()
-                            )
-                            .build()
-                    )
-                    .build()
+                refreshButton()
             )
             .build()
     }
@@ -187,15 +159,44 @@ class LockTileService : TileService() {
                     ).build()
             ).build()
     }
-    private val lockStatusReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val extras = intent.extras
-            if (extras != null) {
-                if(isPhoneLocked != (extras.getString("status") == "phone_locked")){
-                    isPhoneLocked = extras.getString("status") == "phone_locked"
-                    getUpdater(context).requestUpdate(LockTileService::class.java)
-                }
+
+    private fun refreshButton(): LayoutElementBuilders.LayoutElement {
+        return Text.Builder(this, "Refresh")
+            .setColor(ColorBuilders.argb(0xFFFFFFFF.toInt()))
+            .setWeight(LayoutElementBuilders.FONT_WEIGHT_NORMAL)
+            .setTypography(Typography.TYPOGRAPHY_BODY1)
+            .setModifiers(
+                ModifiersBuilders.Modifiers.Builder()
+                    .setClickable(
+                        Clickable.Builder()
+                            .setId(ID_CLICK_REFRESH)
+                            .setOnClick(
+                                // send message to phone to query lock status
+                                ActionBuilders.LoadAction.Builder().build()
+                            )
+                            .build()
+                    )
+                    .build()
+            )
+            .build()
+    }
+
+    private fun requestUpdate() {
+        // proceed if not already loading
+        if (!isLoading) {
+
+            // now it is loading
+            isLoading = true
+            // request the lock status from the phone
+            phoneCommunicationService.getLockStatus { lockStatus ->
+                this.lockStatus = lockStatus
+                // now it is not loading anymore
+                isLoading = false
+
+                // update the tile
+                getUpdater(this).requestUpdate(LockTileService::class.java)
             }
         }
+
     }
 }
