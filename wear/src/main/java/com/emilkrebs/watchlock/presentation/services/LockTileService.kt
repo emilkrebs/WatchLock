@@ -18,29 +18,28 @@ import com.google.common.util.concurrent.ListenableFuture
 
 const val RESOURCES_VERSION = "1"
 const val ID_CLICK_REFRESH = "click_refresh"
-
+const val ID_CLICK_LOCK = "click_lock"
 
 class LockTileService : TileService() {
     private lateinit var phoneCommunicationService: PhoneCommunicationService;
-    private var isLoading: Boolean = false
-    private var lockStatus: LockStatus = LockStatus.UNKNOWN
     override fun onCreate() {
         super.onCreate()
         phoneCommunicationService = PhoneCommunicationService(this)
-    }
 
-    override fun onTileEnterEvent(requestParams: EventBuilders.TileEnterEvent) {
-        super.onTileEnterEvent(requestParams)
-        // request the lock status from the phone
-        requestUpdate()
+        // when the app is first started, request the lock status from the phone
+        if(getLockStatus() == LockStatus.UNKNOWN) {
+            requestUpdate()
+        }
     }
 
     override fun onTileRequest(requestParams: RequestBuilders.TileRequest): ListenableFuture<TileBuilders.Tile> {
         // request the lock status from the phone
         if (requestParams.state?.lastClickableId == ID_CLICK_REFRESH) {
-            requestUpdate()
+            if(!getLoading()) {
+                requestUpdate()
+            }
         }
-        if (isLoading) {
+        if (getLoading()) {
             return Futures.immediateFuture(
                 TileBuilders.Tile.Builder()
                     .setResourcesVersion(RESOURCES_VERSION)
@@ -91,18 +90,34 @@ class LockTileService : TileService() {
                     .setColor(ColorBuilders.argb(0xFFFFFFFF.toInt()))
                     .setWeight(LayoutElementBuilders.FONT_WEIGHT_BOLD)
                     .setTypography(Typography.TYPOGRAPHY_TITLE3)
+                    .setModifiers(
+                        ModifiersBuilders.Modifiers.Builder()
+                            .setClickable(
+                                Clickable.Builder()
+                                    .setId(ID_CLICK_LOCK)
+                                    .setOnClick(
+                                        ActionBuilders.LaunchAction.Builder()
+                                            .setAndroidActivity(
+                                                ActionBuilders.AndroidActivity.Builder()
+                                                    .setClassName(MainActivity::class.java.name)
+                                                    .setPackageName(this.packageName)
+                                                    .build()
+                                            ).build()
+                                    ).build()
+                            ).build()
+                    )
                     .build()
             )
             .build()
     }
 
     private fun mainLayout(): LayoutElementBuilders.LayoutElement {
-        val buttonContent: String = if (lockStatus == LockStatus.LOCKED) {
+        val buttonContent: String = if (getLockStatus() == LockStatus.LOCKED) {
             getString(R.string.phone_locked)
         } else {
             getString(R.string.phone_unlocked)
         }
-        val buttonColor: Int = if (lockStatus == LockStatus.LOCKED) {
+        val buttonColor: Int = if (getLockStatus() == LockStatus.LOCKED) {
             Purple200.toArgb()
         } else {
             Purple500.toArgb()
@@ -146,7 +161,7 @@ class LockTileService : TileService() {
                     )
                     .setClickable(
                         Clickable.Builder()
-                            .setId("lock_phone")
+                            .setId(ID_CLICK_LOCK)
                             .setOnClick(
                                 ActionBuilders.LaunchAction.Builder()
                                     .setAndroidActivity(
@@ -182,21 +197,16 @@ class LockTileService : TileService() {
     }
 
     private fun requestUpdate() {
-        // proceed if not already loading
-        if (!isLoading) {
-
-            // now it is loading
-            isLoading = true
-            // request the lock status from the phone
-            phoneCommunicationService.getLockStatus { lockStatus ->
-                this.lockStatus = lockStatus
-                // now it is not loading anymore
-                isLoading = false
-
-                // update the tile
-                getUpdater(this).requestUpdate(LockTileService::class.java)
-            }
+        // now it is loading
+        setLoading(true)
+        // request the lock status from the phone
+        phoneCommunicationService.getLockStatus { lockStatus ->
+            // now it is not loading anymore
+            setLoading(false)
+            // set the lock status
+            setLockStatus(lockStatus)
+            // update the tile
+            getUpdater(this).requestUpdate(LockTileService::class.java)
         }
-
     }
 }

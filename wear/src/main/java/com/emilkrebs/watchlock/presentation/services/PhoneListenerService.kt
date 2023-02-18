@@ -7,7 +7,7 @@ import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 
 
-class ResponseListenerService : WearableListenerService() {
+class PhoneListenerService : WearableListenerService() {
     override fun onMessageReceived(messageEvent: MessageEvent) {
         val intent = Intent()
         intent.action = ACTION_SEND

@@ -12,20 +12,7 @@
         android:theme="@style/Theme.WatchLock"
         tools:targetApi="31">
         <service
-            android:name=".services.QueryListenerService"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
-                <data
-                    android:host="*"
-                    android:path="/wearable/query"
-                    android:scheme="wear" />
-            </intent-filter>
-        </service>
-
-        <service
-            android:name=".services.CommandListenerService"
+            android:name=".services.WatchListenerService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -33,7 +20,6 @@
 
                 <data
                     android:host="*"
-                    android:path="/wearable/command"
                     android:scheme="wear" />
             </intent-filter>
         </service>
@@ -51,7 +37,6 @@
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
-
 
         <activity
             android:name=".MainActivity"

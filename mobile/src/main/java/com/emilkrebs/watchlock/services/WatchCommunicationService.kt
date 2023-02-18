@@ -1,24 +1,21 @@
-package com.emilkrebs.watchlock.presentation.services
+package com.emilkrebs.watchlock.services
 
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-
-/**
- * A service that handles communication with the phone
- */
-class PhoneCommunicationService(private val context: Context) {
+class WatchCommunicationService(private val context: Context) {
     init {
         val broadcastReceiver = object : BroadcastReceiver() {
             // create a broadcast receiver to receive messages from the phone
             override fun onReceive(context: Context, intent: Intent) {
-                val extras = intent.extras
-                val message = Message(extras?.getString("path")!!, extras.getByteArray("data")!!);
-                onMessageReceived(message)
+                onMessageReceived(getMessageFromIntent(intent))
             }
         }
 
@@ -32,48 +29,17 @@ class PhoneCommunicationService(private val context: Context) {
      */
     var onMessageReceived: ((Message) -> Unit) = {}
 
+
     /**
      * Called when a message fails to send to the phone
      */
     var onFailure: ((Exception) -> Unit) = { _ -> }
 
 
-    /**
-     * Requests the lock status from the phone
-     * @true the phone is locked
-     * @false the phone is unlocked
-     */
-    public fun getLockStatus(response: (LockStatus) -> Unit) {
-        fetch(PhoneCommunicationServiceDefaults.REQUEST_LOCK_STATUS) { response ->
-            if (response.path == PhoneCommunicationServiceDefaults.RESPONSE_PATH) {
-                // return the lock status
-                response(LockStatus.fromBoolean(response.data.toString(Charsets.UTF_8) == "phone_locked"))
-            }
-        }
+    public fun getMessageFromIntent(intent: Intent): Message {
+        val extras = intent.extras
+        return Message(extras?.getString("path")!!, extras.getByteArray("data")!!);
     }
-
-    /**
-     * Requests the phone to lock
-     */
-    public fun requestLockPhone(success: (Boolean) -> Unit) {
-        fetch(PhoneCommunicationServiceDefaults.REQUEST_LOCK_PHONE) { response ->
-            if (response.path == PhoneCommunicationServiceDefaults.RESPONSE_PATH) {
-                // return the lock status
-                success(response.data.toString(Charsets.UTF_8) == "phone_locked")
-            }
-        }
-    }
-
-
-    public fun ping(response: (Boolean) -> Unit) {
-        fetch(PhoneCommunicationServiceDefaults.REQUEST_PING) { response ->
-            if (response.path == PhoneCommunicationServiceDefaults.RESPONSE_PATH) {
-                // return the lock status
-                response(response.data.toString(Charsets.UTF_8) == "pong")
-            }
-        }
-    }
-
     /**
      * Sends a message to the phone and waits for a response
      * @param message the message to send
@@ -124,14 +90,18 @@ class PhoneCommunicationService(private val context: Context) {
     private fun getNodes(context: Context): Collection<String> {
         return Tasks.await(Wearable.getNodeClient(context).connectedNodes).map { it.id }
     }
+
 }
 
-class PhoneCommunicationServiceDefaults {
+class WatchCommunicationServiceDefaults {
     companion object {
         val REQUEST_LOCK_STATUS = Message("/wearable/query", "lock_status".toByteArray())
         val REQUEST_PING = Message("/wearable/query", "ping".toByteArray())
 
         val REQUEST_LOCK_PHONE = Message("/wearable/command", "lock_phone".toByteArray())
+        val RESPONSE_PHONE_LOCKED = Message("/wearable/response", "phone_locked".toByteArray())
+        val RESPONSE_PHONE_UNLOCKED = Message("/wearable/response", "phone_unlocked".toByteArray())
+
 
         const val RESPONSE_PATH = "/phone/response"
     }

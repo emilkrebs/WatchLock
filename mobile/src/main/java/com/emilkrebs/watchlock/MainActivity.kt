@@ -12,7 +12,6 @@ import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.Wearable
 
 
-
 class MainActivity : AppCompatActivity() {
 
     private lateinit var devicePolicyManager: DevicePolicyManager
@@ -33,24 +32,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var resultLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {  result ->
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
 
             }
         }
-}
-public fun sendMessage(context: Context, path: String, message: String) {
-    Thread {
-        run {
-            getNodes(context).forEach {
-                val messageApiClient = Wearable.getMessageClient(context)
-                Tasks.await(messageApiClient.sendMessage(it, path, message.toByteArray()))
-            }
-
-        }
-    }.start()
-}
-
-public fun getNodes(context: Context): Collection<String> {
-    return Tasks.await(Wearable.getNodeClient(context).connectedNodes).map { it.id }
 }
