@@ -60,13 +60,7 @@ fun WearApp(context: Context) {
 fun LockButton(context: Context) {
     Chip(
         onClick = {
-            PhoneCommunicationService(context).requestLockPhone{
-                if (it) {
-                    Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show()
-                }
-            }
+            PhoneCommunicationService(context).requestLockPhone()
         },
         label = { Text("Lock phone", color = MaterialTheme.colors.onBackground) },
         icon = { Icon(Icons.Filled.Lock, contentDescription = "lock icon", tint = MaterialTheme.colors.onBackground) }

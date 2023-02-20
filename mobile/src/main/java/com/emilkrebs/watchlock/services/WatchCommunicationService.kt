@@ -95,14 +95,8 @@ class WatchCommunicationService(private val context: Context) {
 
 class WatchCommunicationServiceDefaults {
     companion object {
-        val REQUEST_LOCK_STATUS = Message("/wearable/query", "lock_status".toByteArray())
-        val REQUEST_PING = Message("/wearable/query", "ping".toByteArray())
-
-        val REQUEST_LOCK_PHONE = Message("/wearable/command", "lock_phone".toByteArray())
-        val RESPONSE_PHONE_LOCKED = Message("/wearable/response", "phone_locked".toByteArray())
-        val RESPONSE_PHONE_UNLOCKED = Message("/wearable/response", "phone_unlocked".toByteArray())
-
-
+        const val QUERY_PATH = "/wearable/query/"
+        const val COMMAND_PATH = "/wearable/command/"
         const val RESPONSE_PATH = "/phone/response"
     }
 }
@@ -121,7 +115,6 @@ enum class LockStatus(val value: Int) {
                 else -> UNKNOWN
             }
         }
-
         fun fromBoolean(bool: Boolean): LockStatus {
             return when (bool) {
                 true -> LOCKED
@@ -141,8 +134,21 @@ class Message(path: String, data: ByteArray) {
     val path: String
     val data: ByteArray
 
+    companion object {
+        fun fromString(path: String, data: String): Message {
+            return Message(path, data.toByteArray(Charsets.UTF_8))
+        }
+    }
+
     init {
         this.path = path
         this.data = data
+    }
+
+    fun isEqualTo(message: Message): Boolean {
+        return this.path == message.path && this.data.contentEquals(message.data)
+    }
+    override fun toString(): String {
+        return "Message(path='$path', data=${data.contentToString()})"
     }
 }

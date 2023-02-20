@@ -17,8 +17,7 @@ class PhoneCommunicationService(private val context: Context) {
             // create a broadcast receiver to receive messages from the phone
             override fun onReceive(context: Context, intent: Intent) {
                 val extras = intent.extras
-                val message = Message(extras?.getString("path")!!, extras.getByteArray("data")!!);
-                onMessageReceived(message)
+                onMessageReceived(Message(extras?.getString("path")!!, extras.getByteArray("data")!!))
             }
         }
 
@@ -44,7 +43,7 @@ class PhoneCommunicationService(private val context: Context) {
      * @false the phone is unlocked
      */
     public fun getLockStatus(response: (LockStatus) -> Unit) {
-        fetch(PhoneCommunicationServiceDefaults.REQUEST_LOCK_STATUS) { response ->
+        fetch(Message(PhoneCommunicationServiceDefaults.QUERY_PATH, "lock_status".toByteArray())) { response ->
             if (response.path == PhoneCommunicationServiceDefaults.RESPONSE_PATH) {
                 // return the lock status
                 response(LockStatus.fromBoolean(response.data.toString(Charsets.UTF_8) == "phone_locked"))
@@ -55,18 +54,15 @@ class PhoneCommunicationService(private val context: Context) {
     /**
      * Requests the phone to lock
      */
-    public fun requestLockPhone(success: (Boolean) -> Unit) {
-        fetch(PhoneCommunicationServiceDefaults.REQUEST_LOCK_PHONE) { response ->
-            if (response.path == PhoneCommunicationServiceDefaults.RESPONSE_PATH) {
-                // return the lock status
-                success(response.data.toString(Charsets.UTF_8) == "phone_locked")
-            }
+    public fun requestLockPhone() {
+        GlobalScope.launch {
+            sendMessage(Message.fromString(PhoneCommunicationServiceDefaults.COMMAND_PATH, "lock_phone")).start()
         }
     }
 
 
     public fun ping(response: (Boolean) -> Unit) {
-        fetch(PhoneCommunicationServiceDefaults.REQUEST_PING) { response ->
+        fetch(Message(PhoneCommunicationServiceDefaults.QUERY_PATH, "ping".toByteArray())) { response ->
             if (response.path == PhoneCommunicationServiceDefaults.RESPONSE_PATH) {
                 // return the lock status
                 response(response.data.toString(Charsets.UTF_8) == "pong")
@@ -78,7 +74,7 @@ class PhoneCommunicationService(private val context: Context) {
      * Sends a message to the phone and waits for a response
      * @param message the message to send
      */
-    public fun fetch(message: Message, response: (Message) -> Unit)  {
+    fun fetch(message: Message, response: (Message) -> Unit)  {
         GlobalScope.launch {
             sendMessage(message).start()
             // send the message to the phone
@@ -86,8 +82,7 @@ class PhoneCommunicationService(private val context: Context) {
                 // create a broadcast receiver to receive messages from the phone
                 override fun onReceive(context: Context, intent: Intent) {
                     val extras = intent.extras
-                    val responseMessage = Message(extras?.getString("path")!!, extras.getByteArray("data")!!);
-                    response(responseMessage)
+                    response(Message(extras?.getString("path")!!, extras.getByteArray("data")!!))
                 }
             }
             // register the broadcast receiver
@@ -128,11 +123,8 @@ class PhoneCommunicationService(private val context: Context) {
 
 class PhoneCommunicationServiceDefaults {
     companion object {
-        val REQUEST_LOCK_STATUS = Message("/wearable/query", "lock_status".toByteArray())
-        val REQUEST_PING = Message("/wearable/query", "ping".toByteArray())
-
-        val REQUEST_LOCK_PHONE = Message("/wearable/command", "lock_phone".toByteArray())
-
+        const val QUERY_PATH = "/wearable/query/"
+        const val COMMAND_PATH = "/wearable/command/"
         const val RESPONSE_PATH = "/phone/response"
     }
 }
@@ -171,8 +163,20 @@ class Message(path: String, data: ByteArray) {
     val path: String
     val data: ByteArray
 
+    companion object {
+        fun fromString(path: String, data: String): Message {
+            return Message(path, data.toByteArray(Charsets.UTF_8))
+        }
+    }
+
     init {
         this.path = path
         this.data = data
+    }
+    fun isEqualTo(message: Message): Boolean {
+        return this.path == message.path && this.data.contentEquals(message.data)
+    }
+    override fun toString(): String {
+        return "Message(path='$path', data=${data.contentToString()})"
     }
 }

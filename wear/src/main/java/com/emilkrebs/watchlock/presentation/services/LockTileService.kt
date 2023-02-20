@@ -85,27 +85,27 @@ class LockTileService : TileService() {
         return LayoutElementBuilders.Column.Builder()
             .setWidth(DimensionBuilders.wrap())
             .setHeight(DimensionBuilders.wrap())
+            .setModifiers(
+                ModifiersBuilders.Modifiers.Builder()
+                    .setClickable(
+                        Clickable.Builder()
+                            .setId(ID_CLICK_LOCK)
+                            .setOnClick(
+                                ActionBuilders.LaunchAction.Builder()
+                                    .setAndroidActivity(
+                                        ActionBuilders.AndroidActivity.Builder()
+                                            .setClassName(MainActivity::class.java.name)
+                                            .setPackageName(this.packageName)
+                                            .build()
+                                    ).build()
+                            ).build()
+                    ).build()
+            )
             .addContent(
                 Text.Builder(this, "Loading...")
                     .setColor(ColorBuilders.argb(0xFFFFFFFF.toInt()))
                     .setWeight(LayoutElementBuilders.FONT_WEIGHT_BOLD)
                     .setTypography(Typography.TYPOGRAPHY_TITLE3)
-                    .setModifiers(
-                        ModifiersBuilders.Modifiers.Builder()
-                            .setClickable(
-                                Clickable.Builder()
-                                    .setId(ID_CLICK_LOCK)
-                                    .setOnClick(
-                                        ActionBuilders.LaunchAction.Builder()
-                                            .setAndroidActivity(
-                                                ActionBuilders.AndroidActivity.Builder()
-                                                    .setClassName(MainActivity::class.java.name)
-                                                    .setPackageName(this.packageName)
-                                                    .build()
-                                            ).build()
-                                    ).build()
-                            ).build()
-                    )
                     .build()
             )
             .build()
