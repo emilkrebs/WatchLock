@@ -1,39 +1,31 @@
 package com.emilkrebs.watchlock.presentation
 
 import android.content.Context
-import android.graphics.drawable.Icon
 import android.os.Bundle
-import android.widget.Spinner
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeviceUnknown
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.wear.compose.material.*
+import androidx.wear.compose.material.Chip
+import androidx.wear.compose.material.Icon
+import androidx.wear.compose.material.MaterialTheme
+import androidx.wear.compose.material.Text
 import androidx.wear.tiles.TileService
 import com.emilkrebs.watchlock.presentation.services.LockStatus
-import com.emilkrebs.watchlock.presentation.services.Message
 import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationService
-import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationServiceDefaults
 import com.emilkrebs.watchlock.presentation.theme.WatchLockTheme
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
