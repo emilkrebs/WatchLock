@@ -30,7 +30,7 @@ class PhoneCommunicationService(private val context: Context) {
      * Called when a message is received from the phone
      */
     var onMessageReceived: ((Message) -> Unit) = {}
-
+    
     /**
      * Called when a message fails to send to the phone
      */
