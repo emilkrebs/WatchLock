@@ -46,22 +46,20 @@ class WatchCommunicationService(private val context: Context) {
      * @param message the message to send
      */
     public fun fetch(message: Message, response: (Message) -> Unit) {
-        GlobalScope.launch {
-            sendMessage(message).start()
-            // send the message to the phone
-            val receiver = object : BroadcastReceiver() {
-                // create a broadcast receiver to receive messages from the phone
-                override fun onReceive(context: Context, intent: Intent) {
-                    val extras = intent.extras
-                    val responseMessage =
-                        Message(extras?.getString("path")!!, extras.getByteArray("data")!!);
-                    response(responseMessage)
-                }
+        sendMessage(message).start()
+        // send the message to the phone
+        val receiver = object : BroadcastReceiver() {
+            // create a broadcast receiver to receive messages from the phone
+            override fun onReceive(context: Context, intent: Intent) {
+                val extras = intent.extras
+                val responseMessage =
+                    Message(extras?.getString("path")!!, extras.getByteArray("data")!!);
+                response(responseMessage)
             }
-            // register the broadcast receiver
-            LocalBroadcastManager.getInstance(context)
-                .registerReceiver(receiver, IntentFilter(Intent.ACTION_SEND))
         }
+        // register the broadcast receiver
+        LocalBroadcastManager.getInstance(context)
+            .registerReceiver(receiver, IntentFilter(Intent.ACTION_SEND))
     }
 
     /**

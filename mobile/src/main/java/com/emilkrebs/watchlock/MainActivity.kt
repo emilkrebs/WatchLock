@@ -4,13 +4,10 @@ import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.*
 import android.os.Bundle
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.emilkrebs.watchlock.receivers.AdminReceiver
-import com.google.android.gms.tasks.Tasks
-import com.google.android.gms.wearable.Wearable
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,6 +25,7 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
             intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
             resultLauncher.launch(intent)
+        } else {
         }
     }
 
