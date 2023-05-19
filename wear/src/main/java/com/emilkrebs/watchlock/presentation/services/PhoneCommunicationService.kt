@@ -12,6 +12,17 @@ import kotlinx.coroutines.launch
  * A service that handles communication with the phone
  */
 class PhoneCommunicationService(private val context: Context) {
+
+    /**
+     * Called when a message is received from the phone
+     */
+    var onMessageReceived: ((Message) -> Unit) = {}
+
+    /**
+     * Called when a message fails to send to the phone
+     */
+    var onFailure: ((Exception) -> Unit) = { _ -> }
+
     init {
         val broadcastReceiver = object : BroadcastReceiver() {
             // create a broadcast receiver to receive messages from the phone
@@ -26,15 +37,6 @@ class PhoneCommunicationService(private val context: Context) {
             .registerReceiver(broadcastReceiver, IntentFilter(Intent.ACTION_SEND))
     }
 
-    /**
-     * Called when a message is received from the phone
-     */
-    var onMessageReceived: ((Message) -> Unit) = {}
-
-    /**
-     * Called when a message fails to send to the phone
-     */
-    var onFailure: ((Exception) -> Unit) = { _ -> }
 
 
     /**
@@ -42,11 +44,16 @@ class PhoneCommunicationService(private val context: Context) {
      * @true the phone is locked
      * @false the phone is unlocked
      */
-    public fun getLockStatus(response: (LockStatus) -> Unit) {
-        fetch(Message(PhoneCommunicationServiceDefaults.QUERY_PATH, "lock_status".toByteArray())) { response ->
-            if (response.path == PhoneCommunicationServiceDefaults.RESPONSE_PATH) {
+    fun getLockStatus(response: (LockStatus) -> Unit) {
+        fetch(
+            Message(
+                PhoneCommunicationServiceDefaults.QUERY_PATH,
+                "lock_status".toByteArray()
+            )
+        ) {
+            if (it.path == PhoneCommunicationServiceDefaults.RESPONSE_PATH) {
                 // return the lock status
-                response(LockStatus.fromBoolean(response.data.toString(Charsets.UTF_8) == "phone_locked"))
+                response(LockStatus.fromBoolean(it.data.toString(Charsets.UTF_8) == "phone_locked"))
             }
         }
     }
@@ -54,18 +61,38 @@ class PhoneCommunicationService(private val context: Context) {
     /**
      * Requests the phone to lock
      */
-    public fun requestLockPhone() {
-        GlobalScope.launch {
-            sendMessage(Message.fromString(PhoneCommunicationServiceDefaults.COMMAND_PATH, "lock_phone")).start()
-        }
+    fun requestLockPhone() {
+        sendMessage(
+            Message.fromString(
+                PhoneCommunicationServiceDefaults.COMMAND_PATH,
+                "lock_phone"
+            )
+        ).start()
+    }
+
+    /**
+     * Requests the phone to unlock
+     */
+    fun requestUnlockPhone() {
+        sendMessage(
+            Message.fromString(
+                PhoneCommunicationServiceDefaults.COMMAND_PATH,
+                "unlock_phone"
+            )
+        ).start()
     }
 
 
-    public fun ping(response: (Boolean) -> Unit) {
-        fetch(Message(PhoneCommunicationServiceDefaults.QUERY_PATH, "ping".toByteArray())) { response ->
-            if (response.path == PhoneCommunicationServiceDefaults.RESPONSE_PATH) {
+    fun ping(response: (Boolean) -> Unit) {
+        fetch(
+            Message(
+                PhoneCommunicationServiceDefaults.QUERY_PATH,
+                "ping".toByteArray()
+            )
+        ) {
+            if (it.path == PhoneCommunicationServiceDefaults.RESPONSE_PATH) {
                 // return the lock status
-                response(response.data.toString(Charsets.UTF_8) == "pong")
+                response(it.data.toString(Charsets.UTF_8) == "pong")
             }
         }
     }
@@ -74,30 +101,30 @@ class PhoneCommunicationService(private val context: Context) {
      * Sends a message to the phone and waits for a response
      * @param message the message to send
      */
-    fun fetch(message: Message, response: (Message) -> Unit)  {
-        GlobalScope.launch {
-            sendMessage(message).start()
-            // send the message to the phone
-            val receiver = object : BroadcastReceiver() {
-                // create a broadcast receiver to receive messages from the phone
-                override fun onReceive(context: Context, intent: Intent) {
-                    val extras = intent.extras
-                    response(Message(extras?.getString("path")!!, extras.getByteArray("data")!!))
-                }
+    fun fetch(message: Message, response: (Message) -> Unit) {
+        sendMessage(message).start()
+        // send the message to the phone
+        val receiver = object : BroadcastReceiver() {
+            // create a broadcast receiver to receive messages from the phone
+            override fun onReceive(context: Context, intent: Intent) {
+                val extras = intent.extras
+                LocalBroadcastManager.getInstance(context).unregisterReceiver(this)
+                response(Message(extras?.getString("path")!!, extras.getByteArray("data")!!))
             }
-            // register the broadcast receiver
-            LocalBroadcastManager.getInstance(context)
-                .registerReceiver(receiver, IntentFilter(Intent.ACTION_SEND))
         }
+        // register the broadcast receiver
+        LocalBroadcastManager.getInstance(context)
+            .registerReceiver(receiver, IntentFilter(Intent.ACTION_SEND))
+
     }
 
     /**
      * Sends a message synchronously to the phone
      * @param message the message to send
      */
-    public fun sendMessage(message: Message): Thread {
+    private fun sendMessage(message: Message): Thread {
         return Thread {
-            getNodes(context).forEach { it ->
+            getNodes(context).forEach {
                 val messageApiClient = Wearable.getMessageClient(context)
                 val sendMessageTask = messageApiClient.sendMessage(
                     it,
@@ -173,9 +200,11 @@ class Message(path: String, data: ByteArray) {
         this.path = path
         this.data = data
     }
+
     fun isEqualTo(message: Message): Boolean {
         return this.path == message.path && this.data.contentEquals(message.data)
     }
+
     override fun toString(): String {
         return "Message(path='$path', data=${data.contentToString()})"
     }

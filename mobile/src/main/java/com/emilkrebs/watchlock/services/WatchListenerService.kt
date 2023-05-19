@@ -18,6 +18,7 @@ class WatchListenerService : WearableListenerService() {
             // lock the phone
             (getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager).lockNow()
         }
+
         // if the message is a query for the lock status
         else if (message.isEqualTo(Message.fromString(WatchCommunicationServiceDefaults.QUERY_PATH, "lock_status"))) {
             if ((this.getSystemService(KEYGUARD_SERVICE) as KeyguardManager).isDeviceLocked) {

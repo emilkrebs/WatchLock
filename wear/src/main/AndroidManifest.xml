@@ -14,7 +14,7 @@
         <service
             android:name=".presentation.services.PhoneListenerService"
             android:enabled="true"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
                 <data
@@ -23,19 +23,6 @@
                     android:scheme="wear" />
             </intent-filter>
         </service>
-        <service
-            android:name=".presentation.services.LockTileService"
-            android:exported="true"
-            android:label="Lock Phone"
-            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER" >
-            <intent-filter>
-                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
-            </intent-filter>
-
-            <!-- <meta-data android:name="androidx.wear.tiles.PREVIEW" -->
-            <!-- android:resource="@drawable/tile_preview" /> -->
-        </service>
-
         <uses-library
             android:name="com.google.android.wearable"
             android:required="true" />
