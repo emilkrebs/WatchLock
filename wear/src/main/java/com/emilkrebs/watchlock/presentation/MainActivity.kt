@@ -24,6 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.Chip
@@ -66,6 +68,24 @@ fun WearApp(context: Context) {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun Preview(context: Context = LocalContext.current){
+    WatchLockTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .background(MaterialTheme.colors.background),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            StatusView(context)
+            Spacer(modifier = Modifier.height(18.dp))
+            LockView(context)
+        }
+    }
+}
 
 @Composable
 fun StatusView(context: Context) {

@@ -16,7 +16,7 @@ class WatchListenerService : WearableListenerService() {
         // if the message is a command to lock the phone
         if (message.isEqualTo(Message.fromString(WatchCommunicationServiceDefaults.COMMAND_PATH, "lock_phone"))) {
             // lock the phone
-            (getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager).lockNow()
+            lockPhone()
         }
 
         // if the message is a query for the lock status
@@ -27,6 +27,10 @@ class WatchListenerService : WearableListenerService() {
                 watchCommunicationService.fetch(Message(WatchCommunicationServiceDefaults.RESPONSE_PATH, "phone_unlocked".toByteArray())) { }
             }
         }
+    }
+
+    private fun lockPhone() {
+        (getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager).lockNow()
     }
 
 }
