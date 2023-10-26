@@ -6,7 +6,7 @@ plugins {
 android {
     signingConfigs {
         release {
-        storeFile file('/Users/emilkrebs/Library/CloudStorage/OneDrive-Personal/Anderes/WatchLock_Pass_adVhjL1624')
+            storeFile file('/Users/emilkrebs/Library/CloudStorage/OneDrive-Personal/Anderes/WatchLock_Pass_adVhjL1624')
             storePassword 'adVhjL1624'
             keyAlias 'key0'
             keyPassword 'adVhjL1624'
