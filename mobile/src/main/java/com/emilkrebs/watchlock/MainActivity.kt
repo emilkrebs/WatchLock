@@ -23,27 +23,29 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        adminComponent = ComponentName(this, AdminReceiver::class.java)
+
         val adminText = findViewById<TextView>(R.id.admin_text)
         val watchText = findViewById<TextView>(R.id.watch_text)
-        val watchLockText = findViewById<TextView>(R.id.watchlock_text)
         val activateButton = findViewById<TextView>(R.id.activate_button)
-        val isActive = getSharedPreferences(getString(R.string.preferences_file_key), MODE_PRIVATE).getBoolean("isActive", false)
+        val isAdminActive = devicePolicyManager.isAdminActive(adminComponent)
 
+        var isActive = getSharedPreferences(getString(R.string.preferences_file_key), MODE_PRIVATE).getBoolean("isActive", false)
 
         activateButton.setOnClickListener {
             val editor = getSharedPreferences(getString(R.string.preferences_file_key), MODE_PRIVATE).edit()
-            editor.putBoolean("isActive", !isActive).apply()
-            recreate()
+            isActive = !isActive
+            editor.putBoolean("isActive", isActive).apply()
+            setIsWatchLockActive(isActive)
         }
 
-
-        devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        adminComponent = ComponentName(this, AdminReceiver::class.java)
-        if (!devicePolicyManager.isAdminActive(adminComponent)) {
-            val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-            intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
-            intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "WatchLock needs admin rights to lock the screen and to run in the background.")
-            resultLauncher.launch(intent)
+        if (!isAdminActive) {
+            adminText.text = getString(R.string.admin_inactive)
+            adminText.setTextColor(getColor(R.color.danger))
+            adminText.setOnClickListener {
+                showRequestAdminDialog()
+            }
         } else {
             adminText.text = getString(R.string.admin_active)
             adminText.setTextColor(getColor(R.color.success))
@@ -61,6 +63,19 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        setIsWatchLockActive(isActive)
+
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mainScope.cancel() // Cancel the CoroutineScope to avoid leaks
+    }
+
+    private fun setIsWatchLockActive(isActive: Boolean) {
+        val watchLockText = findViewById<TextView>(R.id.watchlock_text)
+        val activateButton = findViewById<TextView>(R.id.activate_button)
 
         if (isActive) {
             watchLockText.text = getString(R.string.watchlock_active)
@@ -76,13 +91,13 @@ class MainActivity : AppCompatActivity() {
             activateButton.text = getString(R.string.activate_watchlock)
             activateButton.setBackgroundColor(getColor(R.color.purple_200))
         }
-
     }
 
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mainScope.cancel() // Cancel the CoroutineScope to avoid leaks
+    private fun showRequestAdminDialog() {
+        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
+        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "WatchLock needs admin rights to lock the screen and to run in the background.")
+        resultLauncher.launch(intent)
     }
 
     private var resultLauncher =

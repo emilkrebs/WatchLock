@@ -55,13 +55,30 @@
            android:text="@string/watchlock_inactive"
            />
 
-       <com.google.android.material.button.MaterialButton
-           android:id="@+id/activate_button"
-           android:layout_width="wrap_content"
+       <LinearLayout
+           android:layout_width="match_parent"
            android:layout_height="wrap_content"
-           android:layout_marginTop="12dp"
-           android:text="@string/activate_watchlock"
-           />
+           android:orientation="horizontal"
+           android:alignmentMode="alignBounds"
+           android:rowCount="1"
+           >
+
+<!--           <com.google.android.material.button.MaterialButton-->
+<!--               android:id="@+id/ping_text"-->
+<!--               android:layout_width="wrap_content"-->
+<!--               android:layout_height="wrap_content"-->
+<!--               android:text="@string/ping"-->
+<!--               />-->
+
+           <com.google.android.material.button.MaterialButton
+               android:id="@+id/activate_button"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:layout_marginTop="12dp"
+               android:text="@string/activate_watchlock"
+               />
+       </LinearLayout>
+
 
    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

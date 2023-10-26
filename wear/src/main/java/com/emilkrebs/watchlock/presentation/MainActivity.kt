@@ -74,7 +74,7 @@ fun WearApp(context: Context) {
 
 @Preview(showBackground = true)
 @Composable
-fun Preview(context: Context = LocalContext.current){
+fun Preview(context: Context = LocalContext.current) {
     WatchLockTheme {
         Column(
             modifier = Modifier
@@ -115,19 +115,23 @@ fun StatusView(context: Context) {
 
 @Composable
 fun LockView(context: Context) {
-    Chip(onClick = { PhoneCommunicationService(context).requestLockPhone {
-        when (it) {
-            RequestLockPhoneResult.REJECTED -> {
-                Toast.makeText(context, "Rejected", Toast.LENGTH_SHORT).show()
-            }
-            RequestLockPhoneResult.SUCCESS -> {
-                Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show()
-            }
-            else -> {
-                Toast.makeText(context, "Failure", Toast.LENGTH_SHORT).show()
+    Chip(onClick = {
+        PhoneCommunicationService(context).requestLockPhone {
+            when (it) {
+                RequestLockPhoneResult.REJECTED -> {
+                    Toast.makeText(context, "Rejected", Toast.LENGTH_SHORT).show()
+                }
+
+                RequestLockPhoneResult.SUCCESS -> {
+                    Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show()
+                }
+
+                else -> {
+                    Toast.makeText(context, "Failure", Toast.LENGTH_SHORT).show()
+                }
             }
         }
-    } },
+    },
         label = { Text("Lock phone", color = MaterialTheme.colors.onBackground) }, icon = {
             Icon(
                 Icons.Filled.Lock,
