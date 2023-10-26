@@ -7,14 +7,26 @@ import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.Wearable
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class WatchCommunicationService(private val context: Context) {
+
+    companion object {
+        suspend fun isWatchConnected(context: Context): Boolean = withContext(Dispatchers.IO) {
+            getNodes(context).isNotEmpty()
+        }
+
+        private fun getNodes(context: Context): Collection<String> {
+            return Tasks.await(Wearable.getNodeClient(context).connectedNodes).map { it.id }
+        }
+    }
+
     init {
         val broadcastReceiver = object : BroadcastReceiver() {
             // create a broadcast receiver to receive messages from the phone
             override fun onReceive(context: Context, intent: Intent) {
+
                 onMessageReceived(getMessageFromIntent(intent))
             }
         }
@@ -36,16 +48,16 @@ class WatchCommunicationService(private val context: Context) {
     var onFailure: ((Exception) -> Unit) = { _ -> }
 
 
-    public fun getMessageFromIntent(intent: Intent): Message {
+    fun getMessageFromIntent(intent: Intent): Message {
         val extras = intent.extras
-        return Message(extras?.getString("path")!!, extras.getByteArray("data")!!);
+        return Message(extras?.getString("path")!!, extras.getByteArray("data")!!)
     }
 
     /**
      * Sends a message to the phone and waits for a response
      * @param message the message to send
      */
-    public fun fetch(message: Message, response: (Message) -> Unit) {
+    fun fetch(message: Message, response: (Message) -> Unit) {
         sendMessage(message).start()
         // send the message to the phone
         val receiver = object : BroadcastReceiver() {
@@ -53,7 +65,7 @@ class WatchCommunicationService(private val context: Context) {
             override fun onReceive(context: Context, intent: Intent) {
                 val extras = intent.extras
                 val responseMessage =
-                    Message(extras?.getString("path")!!, extras.getByteArray("data")!!);
+                    Message(extras?.getString("path")!!, extras.getByteArray("data")!!)
                 response(responseMessage)
             }
         }
@@ -62,11 +74,25 @@ class WatchCommunicationService(private val context: Context) {
             .registerReceiver(receiver, IntentFilter(Intent.ACTION_SEND))
     }
 
+    fun ping(response: (Boolean) -> Unit) {
+        fetch(
+            Message(
+                WatchCommunicationServiceDefaults.QUERY_PATH,
+                "ping".toByteArray()
+            )
+        ) {
+            if (it.path == WatchCommunicationServiceDefaults.RESPONSE_PATH) {
+                // return the lock status
+                response(it.data.toString(Charsets.UTF_8) == "pong")
+            }
+        }
+    }
+
     /**
      * Sends a message synchronously to the phone
      * @param message the message to send
      */
-    public fun sendMessage(message: Message): Thread {
+    fun sendMessage(message: Message): Thread {
         return Thread {
             getNodes(context).forEach { it ->
                 val messageApiClient = Wearable.getMessageClient(context)
@@ -85,10 +111,6 @@ class WatchCommunicationService(private val context: Context) {
                 }
             }
         }
-    }
-
-    private fun getNodes(context: Context): Collection<String> {
-        return Tasks.await(Wearable.getNodeClient(context).connectedNodes).map { it.id }
     }
 
 }

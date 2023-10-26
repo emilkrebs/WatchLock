@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">WatchLock</string>
+    <string name="preferences_file_key">com.example.android.watchlock_preferences</string>
+
+    <string name="checklist_title">Checklist</string>
+
+    <string name="admin_active">Admin Active ✓</string>
+    <string name="admin_inactive">Admin Inactive ✗</string>
+
+    <string name="watch_connected">Watch Connected ✓</string>
+    <string name="no_watch_connected">No Watch Connected ✗</string>
+
+    <string name="watchlock_active">WatchLock Active ✓</string>
+    <string name="watchlock_inactive">WatchLock Inactive ✗</string>
+
+    <string name="activate_watchlock">Activate WatchLock</string>
+    <string name="deactivate_watchlock">Deactivate WatchLock</string>
 </resources>

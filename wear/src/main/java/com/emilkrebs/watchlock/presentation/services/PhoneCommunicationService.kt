@@ -28,7 +28,27 @@ class PhoneCommunicationService(private val context: Context) {
             // create a broadcast receiver to receive messages from the phone
             override fun onReceive(context: Context, intent: Intent) {
                 val extras = intent.extras
-                onMessageReceived(Message(extras?.getString("path")!!, extras.getByteArray("data")!!))
+                val message = Message(extras?.getString("path")!!, extras.getByteArray("data")!!)
+
+                // check if message is a ping
+                if (message.isEqualTo(
+                        Message.fromString(
+                            PhoneCommunicationServiceDefaults.QUERY_PATH,
+                            "ping"
+                        )
+                    )
+                ) {
+                    // send a pong
+                    return sendMessage(
+                        Message.fromString(
+                            PhoneCommunicationServiceDefaults.RESPONSE_PATH,
+                            "pong"
+                        )
+                    ).start()
+                }
+
+                onMessageReceived(message)
+
             }
         }
 
@@ -36,7 +56,6 @@ class PhoneCommunicationService(private val context: Context) {
         LocalBroadcastManager.getInstance(context)
             .registerReceiver(broadcastReceiver, IntentFilter(Intent.ACTION_SEND))
     }
-
 
 
     /**
@@ -58,30 +77,35 @@ class PhoneCommunicationService(private val context: Context) {
         }
     }
 
-    /**
-     * Requests the phone to lock
-     */
-    fun requestLockPhone() {
-        sendMessage(
-            Message.fromString(
+    fun requestLockPhone(response: (RequestLockPhoneResult) -> Unit) {
+        fetch(
+            Message(
                 PhoneCommunicationServiceDefaults.COMMAND_PATH,
-                "lock_phone"
+                "lock_phone".toByteArray()
             )
-        ).start()
+        ) {
+            val result = if (it.isEqualTo(
+                    Message.fromString(
+                        PhoneCommunicationServiceDefaults.RESPONSE_PATH,
+                        "rejected"
+                    )
+                )
+            ) {
+                RequestLockPhoneResult.REJECTED
+            } else if (it.isEqualTo(
+                    Message.fromString(
+                        PhoneCommunicationServiceDefaults.RESPONSE_PATH,
+                        "success"
+                    )
+                )
+            ) {
+                RequestLockPhoneResult.SUCCESS
+            } else {
+                RequestLockPhoneResult.FAILURE
+            }
+            response(result)
+        }
     }
-
-    /**
-     * Requests the phone to unlock
-     */
-    fun requestUnlockPhone() {
-        sendMessage(
-            Message.fromString(
-                PhoneCommunicationServiceDefaults.COMMAND_PATH,
-                "unlock_phone"
-            )
-        ).start()
-    }
-
 
     fun ping(response: (Boolean) -> Unit) {
         fetch(
@@ -154,6 +178,13 @@ class PhoneCommunicationServiceDefaults {
         const val COMMAND_PATH = "/wearable/command/"
         const val RESPONSE_PATH = "/phone/response"
     }
+}
+
+enum class RequestLockPhoneResult {
+    SUCCESS,
+    REJECTED,
+    FAILURE,
+    UNKNOWN
 }
 
 enum class LockStatus(val value: Int) {
