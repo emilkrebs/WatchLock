@@ -74,27 +74,13 @@ class WatchCommunicationService(private val context: Context) {
             .registerReceiver(receiver, IntentFilter(Intent.ACTION_SEND))
     }
 
-    fun ping(response: (Boolean) -> Unit) {
-        fetch(
-            Message(
-                WatchCommunicationServiceDefaults.QUERY_PATH,
-                "ping".toByteArray()
-            )
-        ) {
-            if (it.path == WatchCommunicationServiceDefaults.RESPONSE_PATH) {
-                // return the lock status
-                response(it.data.toString(Charsets.UTF_8) == "pong")
-            }
-        }
-    }
-
     /**
      * Sends a message synchronously to the phone
      * @param message the message to send
      */
-    fun sendMessage(message: Message): Thread {
+    private fun sendMessage(message: Message): Thread {
         return Thread {
-            getNodes(context).forEach { it ->
+            getNodes(context).forEach {
                 val messageApiClient = Wearable.getMessageClient(context)
                 val sendMessageTask = messageApiClient.sendMessage(
                     it,
@@ -128,23 +114,7 @@ enum class LockStatus(val value: Int) {
     UNLOCKED(0),
     UNKNOWN(-1);
 
-    companion object {
-        fun fromInt(value: Int): LockStatus {
-            return when (value) {
-                1 -> LOCKED
-                0 -> UNLOCKED
-                -1 -> UNKNOWN
-                else -> UNKNOWN
-            }
-        }
-
-        fun fromBoolean(bool: Boolean): LockStatus {
-            return when (bool) {
-                true -> LOCKED
-                false -> UNLOCKED
-            }
-        }
-    }
+    companion object
 
 }
 

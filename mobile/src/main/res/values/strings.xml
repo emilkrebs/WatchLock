@@ -4,6 +4,7 @@
 
     <string name="checklist_title">Dashboard</string>
 
+    <!-- Checklist -->
     <string name="admin_active">Admin Active ✓</string>
     <string name="admin_inactive">Admin Inactive ✗</string>
 
@@ -15,9 +16,4 @@
 
     <string name="activate_watchlock">Activate WatchLock</string>
     <string name="deactivate_watchlock">Deactivate WatchLock</string>
-
-    <string name="ping">Ping</string>
-    <string name="pinging">Pinging</string>
-    <string name="ping_successful">Ping successful ✓</string>
-    <string name="ping_unsuccessful">Ping unsuccessful ✗</string>
 </resources>

@@ -23,48 +23,37 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // get the device policy manager and the admin component
         devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         adminComponent = ComponentName(this, AdminReceiver::class.java)
 
-        val adminText = findViewById<TextView>(R.id.admin_text)
-        val watchText = findViewById<TextView>(R.id.watch_text)
-        val activateButton = findViewById<TextView>(R.id.activate_button)
-        val isAdminActive = devicePolicyManager.isAdminActive(adminComponent)
-
-        var isActive = getSharedPreferences(getString(R.string.preferences_file_key), MODE_PRIVATE).getBoolean("isActive", false)
-
-        activateButton.setOnClickListener {
-            val editor = getSharedPreferences(getString(R.string.preferences_file_key), MODE_PRIVATE).edit()
-            isActive = !isActive
-            editor.putBoolean("isActive", isActive).apply()
-            setIsWatchLockActive(isActive)
-        }
-
-        if (!isAdminActive) {
-            adminText.text = getString(R.string.admin_inactive)
-            adminText.setTextColor(getColor(R.color.danger))
-            adminText.setOnClickListener {
+        // set the click listener for the activate button
+        findViewById<TextView>(R.id.activate_button).setOnClickListener {
+            if (!devicePolicyManager.isAdminActive(adminComponent)) {
                 showRequestAdminDialog()
-            }
-        } else {
-            adminText.text = getString(R.string.admin_active)
-            adminText.setTextColor(getColor(R.color.success))
-        }
-
-        mainScope.launch {
-            val isConnected = WatchCommunicationService.isWatchConnected(applicationContext)
-
-            if(isConnected) {
-                watchText.text = getString(R.string.watch_connected)
-                watchText.setTextColor(getColor(R.color.success))
             } else {
-                watchText.text = getString(R.string.no_watch_connected)
-                watchText.setTextColor(getColor(R.color.danger))
+                val isActive =
+                    getSharedPreferences(
+                        getString(R.string.preferences_file_key),
+                        MODE_PRIVATE
+                    ).getBoolean(
+                        "isActive",
+                        false
+                    )
+                setWatchLockActive(!isActive)
+                checkIsWatchLockActive()
             }
         }
 
-        setIsWatchLockActive(isActive)
+        checkAllItems()
+    }
 
+    override fun onResume() {
+        super.onResume()
+
+        // check all items of the checklist
+        checkAllItems()
     }
 
 
@@ -73,11 +62,54 @@ class MainActivity : AppCompatActivity() {
         mainScope.cancel() // Cancel the CoroutineScope to avoid leaks
     }
 
-    private fun setIsWatchLockActive(isActive: Boolean) {
+    private fun checkAllItems() {
+        checkHasAdminPrivileges()
+        checkIsWatchConnected()
+        checkIsWatchLockActive()
+    }
+
+    private fun checkIsWatchConnected() {
+        val watchText = findViewById<TextView>(R.id.watch_text)
+        mainScope.launch {
+            val isConnected = WatchCommunicationService.isWatchConnected(applicationContext)
+
+            if (isConnected) {
+                watchText.text = getString(R.string.watch_connected)
+                watchText.setTextColor(getColor(R.color.success))
+            } else {
+                watchText.text = getString(R.string.no_watch_connected)
+                watchText.setTextColor(getColor(R.color.danger))
+            }
+        }
+    }
+
+    private fun checkHasAdminPrivileges() {
+        val adminText = findViewById<TextView>(R.id.admin_text)
+        if (!devicePolicyManager.isAdminActive(adminComponent)) {
+            adminText.text = getString(R.string.admin_inactive)
+            adminText.setTextColor(getColor(R.color.danger))
+            adminText.setShadowLayer(1f, 0f, 0f, getColor(R.color.black))
+
+            adminText.setOnClickListener {
+                showRequestAdminDialog()
+            }
+        } else {
+            adminText.text = getString(R.string.admin_active)
+            adminText.setTextColor(getColor(R.color.success))
+        }
+    }
+
+    private fun checkIsWatchLockActive() {
         val watchLockText = findViewById<TextView>(R.id.watchlock_text)
         val activateButton = findViewById<TextView>(R.id.activate_button)
 
-        if (isActive) {
+        val isActive =
+            getSharedPreferences(getString(R.string.preferences_file_key), MODE_PRIVATE).getBoolean(
+                "isActive",
+                false
+            )
+
+        if (isActive && devicePolicyManager.isAdminActive(adminComponent)) {
             watchLockText.text = getString(R.string.watchlock_active)
             watchLockText.setTextColor(getColor(R.color.success))
 
@@ -93,10 +125,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setWatchLockActive(isActive: Boolean) {
+        val editor = getSharedPreferences(
+            getString(R.string.preferences_file_key),
+            MODE_PRIVATE
+        ).edit()
+        editor.putBoolean("isActive", isActive).apply()
+    }
+
     private fun showRequestAdminDialog() {
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
-        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "WatchLock needs admin rights to lock the screen and to run in the background.")
+        intent.putExtra(
+            DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+            "WatchLock needs admin rights to lock the screen and to run in the background."
+        )
         resultLauncher.launch(intent)
     }
 
@@ -106,6 +149,7 @@ class MainActivity : AppCompatActivity() {
                 val statusText = findViewById<TextView>(R.id.admin_text)
                 statusText.text = getString(R.string.admin_active)
                 statusText.setTextColor(getColor(R.color.success))
+                setWatchLockActive(true)
             }
 
         }

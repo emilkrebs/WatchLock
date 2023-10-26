@@ -1,11 +1,12 @@
 package com.emilkrebs.watchlock.presentation.services
 
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.Wearable
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 
 /**
@@ -107,25 +108,11 @@ class PhoneCommunicationService(private val context: Context) {
         }
     }
 
-    fun ping(response: (Boolean) -> Unit) {
-        fetch(
-            Message(
-                PhoneCommunicationServiceDefaults.QUERY_PATH,
-                "ping".toByteArray()
-            )
-        ) {
-            if (it.path == PhoneCommunicationServiceDefaults.RESPONSE_PATH) {
-                // return the lock status
-                response(it.data.toString(Charsets.UTF_8) == "pong")
-            }
-        }
-    }
-
     /**
      * Sends a message to the phone and waits for a response
      * @param message the message to send
      */
-    fun fetch(message: Message, response: (Message) -> Unit) {
+    private fun fetch(message: Message, response: (Message) -> Unit) {
         sendMessage(message).start()
         // send the message to the phone
         val receiver = object : BroadcastReceiver() {
@@ -193,14 +180,6 @@ enum class LockStatus(val value: Int) {
     UNKNOWN(-1);
 
     companion object {
-        fun fromInt(value: Int): LockStatus {
-            return when (value) {
-                1 -> LOCKED
-                0 -> UNLOCKED
-                -1 -> UNKNOWN
-                else -> UNKNOWN
-            }
-        }
 
         fun fromBoolean(bool: Boolean): LockStatus {
             return when (bool) {

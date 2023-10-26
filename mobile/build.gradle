@@ -4,13 +4,21 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        release {
+        storeFile file('/Users/emilkrebs/Library/CloudStorage/OneDrive-Personal/Anderes/WatchLock_Pass_adVhjL1624')
+            storePassword 'adVhjL1624'
+            keyAlias 'key0'
+            keyPassword 'adVhjL1624'
+        }
+    }
     namespace 'com.emilkrebs.watchlock'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.emilkrebs.watchlock"
         minSdk 30
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -19,8 +27,17 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            debuggable false
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+
+        debug {
+            minifyEnabled false
+            debuggable true
+            signingConfig signingConfigs.debug
         }
     }
     compileOptions {
@@ -33,10 +50,10 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.6.0'
-    implementation 'com.google.android.material:material:1.7.0'
-    implementation 'com.google.android.gms:play-services-wearable:18.0.0'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'com.google.android.gms:play-services-wearable:18.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

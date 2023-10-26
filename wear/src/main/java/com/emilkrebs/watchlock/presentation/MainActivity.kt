@@ -34,9 +34,7 @@ import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import com.emilkrebs.watchlock.presentation.services.LockStatus
-import com.emilkrebs.watchlock.presentation.services.Message
 import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationService
-import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationServiceDefaults
 import com.emilkrebs.watchlock.presentation.services.RequestLockPhoneResult
 import com.emilkrebs.watchlock.presentation.theme.WatchLockTheme
 import kotlinx.coroutines.delay
