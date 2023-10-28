@@ -12,6 +12,7 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
 rootProject.name = "WatchLock"
-include ':mobile'
-include ':wear'
+include(":mobile")
+include(":wear")
