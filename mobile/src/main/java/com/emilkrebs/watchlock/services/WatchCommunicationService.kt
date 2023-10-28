@@ -113,9 +113,6 @@ enum class LockStatus(val value: Int) {
     LOCKED(1),
     UNLOCKED(0),
     UNKNOWN(-1);
-
-    companion object
-
 }
 
 /**

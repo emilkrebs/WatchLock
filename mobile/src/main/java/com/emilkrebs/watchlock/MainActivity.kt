@@ -135,10 +135,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun showRequestAdminDialog() {
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+        val explanation = getString(R.string.admin_explanation)
+        println(explanation)
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
         intent.putExtra(
             DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-            "WatchLock needs admin rights to lock the screen and to run in the background."
+            explanation
         )
         resultLauncher.launch(intent)
     }

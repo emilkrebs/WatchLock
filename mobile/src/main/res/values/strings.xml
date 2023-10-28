@@ -3,6 +3,7 @@
     <string name="preferences_file_key">com.example.android.watchlock_preferences</string>
 
     <string name="checklist_title">Dashboard</string>
+    <string name="admin_explanation">WatchLock needs admin rights to lock the screen and to run in the background.</string>
 
     <!-- Checklist -->
     <string name="admin_active">Admin Active ✓</string>
