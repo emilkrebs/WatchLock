@@ -17,4 +17,10 @@
 
     <string name="activate_watchlock">Activate WatchLock</string>
     <string name="deactivate_watchlock">Deactivate WatchLock</string>
+
+    <string name="ping">Ping</string>
+    <string name="ping_pending">Pinging…</string>
+    <string name="ping_success">Ping Success ✓</string>
+    <string name="ping_failed">Ping Failed ✗</string>
+
 </resources>

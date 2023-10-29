@@ -10,4 +10,5 @@
 
     <color name="danger">#F44336</color>
     <color name="success">#49BF4D</color>
+    <color name="warning">#FFC107</color>
 </resources>

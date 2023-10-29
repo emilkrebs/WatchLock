@@ -1,100 +1,63 @@
 package com.emilkrebs.watchlock.services
 
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.Wearable
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class WatchCommunicationService(private val context: Context) {
 
+
     companion object {
-        suspend fun isWatchConnected(context: Context): Boolean = withContext(Dispatchers.IO) {
-            getNodes(context).isNotEmpty()
+
+        fun isWatchConnected(context: Context, onConnected: (Boolean) -> Unit) {
+            getNodes(context) { nodes ->
+                onConnected(nodes.isNotEmpty())
+            }
         }
-
-        private fun getNodes(context: Context): Collection<String> {
-            return Tasks.await(Wearable.getNodeClient(context).connectedNodes).map { it.id }
-        }
-    }
-
-    init {
-        val broadcastReceiver = object : BroadcastReceiver() {
-            // create a broadcast receiver to receive messages from the phone
-            override fun onReceive(context: Context, intent: Intent) {
-
-                onMessageReceived(getMessageFromIntent(intent))
+        fun getNodes(context: Context, onNodesReceived: (Collection<String>) -> Unit) {
+            Wearable.getNodeClient(context).connectedNodes.addOnSuccessListener { nodes ->
+                val nodeIds = nodes.map { it.id }
+                onNodesReceived(nodeIds)
             }
         }
 
-        // register the broadcast receiver
-        LocalBroadcastManager.getInstance(context)
-            .registerReceiver(broadcastReceiver, IntentFilter(Intent.ACTION_SEND))
     }
 
-    /**
-     * Called when a message is received from the phone
-     */
-    var onMessageReceived: ((Message) -> Unit) = {}
-
-
-    /**
-     * Called when a message fails to send to the phone
-     */
-    var onFailure: ((Exception) -> Unit) = { _ -> }
-
-
-    fun getMessageFromIntent(intent: Intent): Message {
-        val extras = intent.extras
-        return Message(extras?.getString("path")!!, extras.getByteArray("data")!!)
-    }
-
-    /**
-     * Sends a message to the phone and waits for a response
-     * @param message the message to send
-     */
-    fun fetch(message: Message, response: (Message) -> Unit) {
-        sendMessage(message).start()
-        // send the message to the phone
-        val receiver = object : BroadcastReceiver() {
-            // create a broadcast receiver to receive messages from the phone
-            override fun onReceive(context: Context, intent: Intent) {
-                val extras = intent.extras
-                val responseMessage =
-                    Message(extras?.getString("path")!!, extras.getByteArray("data")!!)
-                response(responseMessage)
-            }
+    fun pingWatch(onComplete: (Boolean, String?) -> Unit = { _, _ -> }) {
+        sendMessage(Message.fromString(WatchCommunicationServiceDefaults.PING_PATH, "ping")) { success, message ->
+            onComplete(success, message)
         }
-        // register the broadcast receiver
-        LocalBroadcastManager.getInstance(context)
-            .registerReceiver(receiver, IntentFilter(Intent.ACTION_SEND))
     }
+    fun sendMessage(
+        message: Message,
+        onComplete: (Boolean, String?) -> Unit = { _, _ -> }
+    ) {
+        val messageApiClient = Wearable.getMessageClient(context)
+        getNodes(context) { nodes ->
+            if (nodes.isNotEmpty()) {
+                val tasks = mutableListOf<Task<Int>>()
 
-    /**
-     * Sends a message synchronously to the phone
-     * @param message the message to send
-     */
-    private fun sendMessage(message: Message): Thread {
-        return Thread {
-            getNodes(context).forEach {
-                val messageApiClient = Wearable.getMessageClient(context)
-                val sendMessageTask = messageApiClient.sendMessage(
-                    it,
-                    message.path,
-                    message.data
-                )
-                sendMessageTask.addOnFailureListener { e ->
-                    onFailure(e)
-                    return@addOnFailureListener
+                for (node in nodes) {
+                    val sendMessageTask =
+                        messageApiClient.sendMessage(node, message.path, message.data)
+                            .addOnCompleteListener { task ->
+                                onComplete(
+                                    task.isSuccessful,
+                                    if (!task.isSuccessful) task.exception?.message else null
+                                )
+                            }
+
+                    tasks.add(sendMessageTask)
                 }
-                sendMessageTask.addOnCompleteListener {
-                    // return ok
-                    return@addOnCompleteListener
+
+                // Wait for all tasks to complete before returning.
+                Tasks.whenAll(tasks).addOnCompleteListener {
+                    // All tasks have completed.
+
                 }
+            } else {
+                onComplete(false, "No connected nodes found.")
             }
         }
     }
@@ -103,18 +66,13 @@ class WatchCommunicationService(private val context: Context) {
 
 class WatchCommunicationServiceDefaults {
     companion object {
-        const val QUERY_PATH = "/wearable/query/"
+        const val REQUEST_PATH = "/wearable/request/"
         const val COMMAND_PATH = "/wearable/command/"
-        const val RESPONSE_PATH = "/phone/response"
+        const val PING_PATH = "/wearable/ping/"
+
+        const val LOCK_STATUS_PATH = "/wearable/lock_status/"
     }
 }
-
-enum class LockStatus(val value: Int) {
-    LOCKED(1),
-    UNLOCKED(0),
-    UNKNOWN(-1);
-}
-
 /**
  * A message object
  * @param path the path of the message
@@ -133,10 +91,6 @@ class Message(path: String, data: ByteArray) {
     init {
         this.path = path
         this.data = data
-    }
-
-    fun isEqualTo(message: Message): Boolean {
-        return this.path == message.path && this.data.contentEquals(message.data)
     }
 
     override fun toString(): String {

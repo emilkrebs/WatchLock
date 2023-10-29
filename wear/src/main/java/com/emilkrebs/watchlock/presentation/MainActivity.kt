@@ -2,7 +2,6 @@ package com.emilkrebs.watchlock.presentation
 
 import android.content.Context
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -36,27 +35,17 @@ import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import com.emilkrebs.watchlock.presentation.services.LockStatus
 import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationService
-import com.emilkrebs.watchlock.presentation.services.RequestLockPhoneResult
 import com.emilkrebs.watchlock.presentation.theme.WatchLockTheme
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 
 
-class MainActivity : ComponentActivity() {
-    private val mainScope = MainScope()
-
+class MainActivity : ComponentActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        return setContent {
+        setContent {
             WearApp(this)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mainScope.cancel() // Cancel the CoroutineScope to avoid leaks
     }
 
 }
@@ -84,25 +73,19 @@ fun Preview(context: Context = LocalContext.current) {
 fun WearApp(context: Context) {
     var isConnected by remember { mutableStateOf(false) }
 
-
-
     LaunchedEffect(Unit) {
-        while (!isConnected) {
-            PhoneCommunicationService.getNodes(context) { nodes ->
-                isConnected = nodes.isNotEmpty()
-            }
+        PhoneCommunicationService.isPhoneConnected(context) { connected ->
+            isConnected = connected
         }
-        delay(1000)
     }
 
     if (isConnected) {
         Connected(context)
     } else {
         NotConnected {
-            PhoneCommunicationService.getNodes(context) { nodes ->
-                isConnected = nodes.isNotEmpty()
+            PhoneCommunicationService.isPhoneConnected(context) { connected ->
+                isConnected = connected
             }
-
         }
     }
 
@@ -138,7 +121,7 @@ fun NotConnected(onRetry: () -> Unit = {}) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "No phone not connected",
+                text = "No phone connected",
                 color = MaterialTheme.colors.onBackground,
                 fontSize = 16.sp
             )
@@ -164,14 +147,17 @@ fun StatusView(context: Context) {
 
     PhoneCommunicationService(context).onLockStatusReceived = {
         lockStatus = it
+        isLoading = false
     }
+
+    // request the lock status every 500ms
     LaunchedEffect(Unit) {
         while (true) {
-            if (!isLoading) {
+            if(!isLoading) {
                 isLoading = true
                 PhoneCommunicationService(context).requestLockStatus()
             }
-            delay(1000)
+            delay(500)
         }
     }
 
