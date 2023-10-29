@@ -2,86 +2,87 @@ package com.emilkrebs.watchlock.services
 
 import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
+import android.content.Intent
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.emilkrebs.watchlock.R
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
+import kotlinx.coroutines.SupervisorJob
 
-
+const val PING_BROADCAST_ACTION = "com.emilkrebs.watchlock.PING"
 class WatchListenerService : WearableListenerService() {
+    private val job = SupervisorJob()
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
         val message =
             Message.fromString(messageEvent.path, messageEvent.data.toString(Charsets.UTF_8))
-        val watchCommunicationService = WatchCommunicationService(this)
+
+        val data = String(message.data)
+        when (message.path) {
+            WatchCommunicationServiceDefaults.COMMAND_PATH -> handleCommand(data)
+            WatchCommunicationServiceDefaults.REQUEST_PATH -> handleRequest(data)
+            WatchCommunicationServiceDefaults.PING_PATH -> handlePing(data)
+        }
+
+    }
+
+    private fun handleCommand(command: String) {
         val isActive =
             getSharedPreferences(getString(R.string.preferences_file_key), MODE_PRIVATE).getBoolean(
                 "isActive",
                 false
             )
 
-
-        // if the message is a command to lock the phone
-        if (message.isEqualTo(
-                Message.fromString(
-                    WatchCommunicationServiceDefaults.COMMAND_PATH,
-                    "lock_phone"
-                )
-            )
-        ) {
-            // lock the phone
+        if (command == "lock_phone") {
             if (isActive) {
-                try {
-                    lockPhone()
-                    watchCommunicationService.fetch(
-                        Message(
-                            WatchCommunicationServiceDefaults.RESPONSE_PATH,
-                            "success".toByteArray()
-                        )
-                    ) { }
-                } catch (e: SecurityException) {
-                    watchCommunicationService.fetch(
-                        Message(
-                            WatchCommunicationServiceDefaults.RESPONSE_PATH,
-                            "failed".toByteArray()
-                        )
-                    ) { }
-                }
-            } else {
-                watchCommunicationService.fetch(
-                    Message(
-                        WatchCommunicationServiceDefaults.RESPONSE_PATH,
-                        "rejected".toByteArray()
-                    )
-                ) { }
-            }
-        }
-
-        // if the message is a query for the lock status
-        else if (message.isEqualTo(
-                Message.fromString(
-                    WatchCommunicationServiceDefaults.QUERY_PATH,
-                    "lock_status"
-                )
-            )
-        ) {
-            if ((this.getSystemService(KEYGUARD_SERVICE) as KeyguardManager).isDeviceLocked) {
-                watchCommunicationService.fetch(
-                    Message(
-                        WatchCommunicationServiceDefaults.RESPONSE_PATH,
-                        "phone_locked".toByteArray()
-                    )
-                ) { }
-            } else {
-                watchCommunicationService.fetch(
-                    Message(
-                        WatchCommunicationServiceDefaults.RESPONSE_PATH,
-                        "phone_unlocked".toByteArray()
-                    )
-                ) { }
+                lockPhone()
             }
         }
     }
 
+    private fun handleRequest(request: String) {
+        if (request == "lock_status") {
+            sendLockStatus(isPhoneLocked())
+        }
+    }
+
+    private fun handlePing(message: String) {
+        if(message == "ping") {
+            return WatchCommunicationService(this).sendMessage(
+                Message.fromString(
+                    WatchCommunicationServiceDefaults.PING_PATH,
+                    "pong"
+                )
+            )
+        }
+        else if(message == "pong") {
+            // send broadcast to MainActivity
+            val intent = Intent()
+            intent.action = PING_BROADCAST_ACTION
+            intent.putExtra("ping", true)
+
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        }
+    }
+
+    private fun sendLockStatus(isLocked: Boolean) {
+        WatchCommunicationService(this).sendMessage(
+            Message.fromString(
+                WatchCommunicationServiceDefaults.LOCK_STATUS_PATH,
+                isLocked.toString()
+            )
+        )
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel()
+    }
+
+    private fun isPhoneLocked(): Boolean {
+        return (this.getSystemService(KEYGUARD_SERVICE) as KeyguardManager).isDeviceLocked
+    }
 
     private fun lockPhone() {
         (getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager).lockNow()

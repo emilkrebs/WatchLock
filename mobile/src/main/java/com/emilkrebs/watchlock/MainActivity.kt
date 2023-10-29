@@ -4,21 +4,42 @@ import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.*
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.emilkrebs.watchlock.receivers.AdminReceiver
+import com.emilkrebs.watchlock.services.PING_BROADCAST_ACTION
 import com.emilkrebs.watchlock.services.WatchCommunicationService
+import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
+
+enum class PingStatus {
+    SUCCESS,
+    PENDING,
+    FAILED,
+    NONE
+}
 class MainActivity : AppCompatActivity() {
 
     private lateinit var devicePolicyManager: DevicePolicyManager
     private lateinit var adminComponent: ComponentName
 
     private val mainScope = MainScope()
+
+    private var pingStatus = PingStatus.NONE
+
+    private val pingTimeoutRunnable = Runnable {
+        if(pingStatus == PingStatus.PENDING) {
+            pingStatus = PingStatus.FAILED
+            checkPing()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,8 +49,9 @@ class MainActivity : AppCompatActivity() {
         devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         adminComponent = ComponentName(this, AdminReceiver::class.java)
 
+        val pingButton = findViewById<TextView>(R.id.ping_button)
         // set the click listener for the activate button
-        findViewById<TextView>(R.id.activate_button).setOnClickListener {
+        findViewById<MaterialButton>(R.id.activate_button).setOnClickListener {
             if (!devicePolicyManager.isAdminActive(adminComponent)) {
                 showRequestAdminDialog()
             } else {
@@ -46,8 +68,44 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        pingButton.setOnClickListener {
+            mainScope.launch {
+                pingStatus = try {
+                    WatchCommunicationService(applicationContext).pingWatch()
+
+                    // set the ping status to failed after 5 seconds
+                    Handler(Looper.getMainLooper()).postDelayed(pingTimeoutRunnable, 8000)
+
+                    PingStatus.PENDING
+                } catch (e: Exception) {
+                    PingStatus.FAILED
+                }
+                checkPing()
+            }
+        }
+        val filter = IntentFilter("com.emilkrebs.watchlock.PING")
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(pingReceiver, filter)
+
         checkAllItems()
     }
+
+    private val pingReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == PING_BROADCAST_ACTION) {
+                // Handle the broadcast here
+                val pingValue = intent.getBooleanExtra("ping", false)
+                pingStatus = if (pingValue) {
+                    PingStatus.SUCCESS
+                } else {
+                    PingStatus.FAILED
+                }
+                Handler(Looper.getMainLooper()).removeCallbacks(pingTimeoutRunnable)
+                checkPing()
+            }
+        }
+    }
+
 
     override fun onResume() {
         super.onResume()
@@ -59,6 +117,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(pingReceiver)
         mainScope.cancel() // Cancel the CoroutineScope to avoid leaks
     }
 
@@ -69,17 +128,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkIsWatchConnected() {
-        val watchText = findViewById<TextView>(R.id.watch_text)
-        mainScope.launch {
-            val isConnected = WatchCommunicationService.isWatchConnected(applicationContext)
+        val watchText = findViewById<TextView>(R.id.watch_connected_text) ?: return
 
-            if (isConnected) {
-                watchText.text = getString(R.string.watch_connected)
-                watchText.setTextColor(getColor(R.color.success))
-            } else {
-                watchText.text = getString(R.string.no_watch_connected)
-                watchText.setTextColor(getColor(R.color.danger))
+        mainScope.launch {
+            WatchCommunicationService.isWatchConnected(applicationContext) {
+                if (it) {
+                    watchText.text = getString(R.string.watch_connected)
+                    watchText.setTextColor(getColor(R.color.success))
+                } else {
+                    watchText.text = getString(R.string.no_watch_connected)
+                    watchText.setTextColor(getColor(R.color.danger))
+                }
             }
+
         }
     }
 
@@ -100,8 +161,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkIsWatchLockActive() {
-        val watchLockText = findViewById<TextView>(R.id.watchlock_text)
-        val activateButton = findViewById<TextView>(R.id.activate_button)
+        val watchLockText = findViewById<TextView>(R.id.watchlock_active_text)
+        val activateButton = findViewById<MaterialButton>(R.id.activate_button)
 
         val isActive =
             getSharedPreferences(getString(R.string.preferences_file_key), MODE_PRIVATE).getBoolean(
@@ -122,6 +183,46 @@ class MainActivity : AppCompatActivity() {
 
             activateButton.text = getString(R.string.activate_watchlock)
             activateButton.setBackgroundColor(getColor(R.color.purple_200))
+        }
+    }
+
+    private fun checkPing() {
+        val pingButton = findViewById<MaterialButton>(R.id.ping_button) ?: return
+        val pingText = findViewById<TextView>(R.id.ping_text) ?: return
+
+        when(pingStatus) {
+            PingStatus.SUCCESS -> {
+                pingButton.text = getString(R.string.ping)
+                pingButton.isEnabled = true
+                pingButton.setBackgroundColor(getColor(R.color.success))
+
+                pingText.visibility = TextView.VISIBLE
+                pingText.text = getString(R.string.ping_success)
+                pingText.setTextColor(getColor(R.color.success))
+            }
+            PingStatus.PENDING -> {
+                pingButton.text = getString(R.string.ping_pending)
+                pingButton.isEnabled = false
+                pingButton.setBackgroundColor(getColor(R.color.warning))
+
+                pingText.visibility = TextView.GONE
+            }
+            PingStatus.FAILED -> {
+                pingButton.text = getString(R.string.ping)
+                pingButton.isEnabled = true
+                pingButton.setBackgroundColor(getColor(R.color.danger))
+
+                pingText.visibility = TextView.VISIBLE
+                pingText.text = getString(R.string.ping_failed)
+                pingText.setTextColor(getColor(R.color.danger))
+            }
+            PingStatus.NONE -> {
+                pingButton.text = getString(R.string.ping)
+                pingButton.isEnabled = true
+                pingButton.setBackgroundColor(getColor(R.color.purple_200))
+
+                pingText.visibility = TextView.GONE
+            }
         }
     }
 
