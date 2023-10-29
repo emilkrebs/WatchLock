@@ -23,15 +23,16 @@ android {
         create("release") {
             storeFile = file("../WatchLock.keystore")
             storePassword = "adVhjL1624"
-            keyAlias = "key0"
-            keyPassword = "adVhjL1624"
+            keyAlias = "keyEm"
+            keyPassword = "NNrEhGMS"
         }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
             isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

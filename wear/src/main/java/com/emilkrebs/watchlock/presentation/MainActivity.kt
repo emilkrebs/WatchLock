@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeviceUnknown
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,37 +38,27 @@ import com.emilkrebs.watchlock.presentation.services.LockStatus
 import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationService
 import com.emilkrebs.watchlock.presentation.services.RequestLockPhoneResult
 import com.emilkrebs.watchlock.presentation.theme.WatchLockTheme
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 
 
 class MainActivity : ComponentActivity() {
+    private val mainScope = MainScope()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
+
+        return setContent {
             WearApp(this)
         }
     }
 
-}
-
-
-@Composable
-fun WearApp(context: Context) {
-    WatchLockTheme {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .background(MaterialTheme.colors.background),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            StatusView(context)
-            Spacer(modifier = Modifier.height(18.dp))
-            LockView(context)
-        }
+    override fun onDestroy() {
+        super.onDestroy()
+        mainScope.cancel() // Cancel the CoroutineScope to avoid leaks
     }
+
 }
 
 @Preview(showBackground = true)
@@ -90,18 +81,95 @@ fun Preview(context: Context = LocalContext.current) {
 }
 
 @Composable
+fun WearApp(context: Context) {
+    var isConnected by remember { mutableStateOf(false) }
+
+
+
+    LaunchedEffect(Unit) {
+        while (!isConnected) {
+            PhoneCommunicationService.getNodes(context) { nodes ->
+                isConnected = nodes.isNotEmpty()
+            }
+        }
+        delay(1000)
+    }
+
+    if (isConnected) {
+        Connected(context)
+    } else {
+        NotConnected {
+            PhoneCommunicationService.getNodes(context) { nodes ->
+                isConnected = nodes.isNotEmpty()
+            }
+
+        }
+    }
+
+}
+
+@Composable
+fun Connected(context: Context) {
+    WatchLockTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .background(MaterialTheme.colors.background),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            StatusView(context)
+            Spacer(modifier = Modifier.height(18.dp))
+            LockView(context)
+        }
+    }
+}
+
+@Composable
+fun NotConnected(onRetry: () -> Unit = {}) {
+    WatchLockTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .background(MaterialTheme.colors.background),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = "No phone not connected",
+                color = MaterialTheme.colors.onBackground,
+                fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.height(18.dp))
+            Chip(onClick = onRetry,
+                label = { Text("Retry ", color = MaterialTheme.colors.onBackground) }, icon = {
+                    Icon(
+                        Icons.Filled.Sync,
+                        contentDescription = "sync icon",
+                        tint = MaterialTheme.colors.onBackground
+                    )
+                }
+            )
+
+        }
+    }
+}
+
+@Composable
 fun StatusView(context: Context) {
     var lockStatus by remember { mutableStateOf(LockStatus.UNKNOWN) }
     var isLoading by remember { mutableStateOf(false) }
 
+    PhoneCommunicationService(context).onLockStatusReceived = {
+        lockStatus = it
+    }
     LaunchedEffect(Unit) {
         while (true) {
             if (!isLoading) {
                 isLoading = true
-                PhoneCommunicationService(context).getLockStatus { newLockStatus ->
-                    lockStatus = newLockStatus
-                    isLoading = false
-                }
+                PhoneCommunicationService(context).requestLockStatus()
             }
             delay(1000)
         }
@@ -114,21 +182,7 @@ fun StatusView(context: Context) {
 @Composable
 fun LockView(context: Context) {
     Chip(onClick = {
-        PhoneCommunicationService(context).requestLockPhone {
-            when (it) {
-                RequestLockPhoneResult.REJECTED -> {
-                    Toast.makeText(context, "Rejected", Toast.LENGTH_SHORT).show()
-                }
-
-                RequestLockPhoneResult.SUCCESS -> {
-                    Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show()
-                }
-
-                else -> {
-                    Toast.makeText(context, "Failure", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
+        PhoneCommunicationService(context).requestLockPhone()
     },
         label = { Text("Lock phone", color = MaterialTheme.colors.onBackground) }, icon = {
             Icon(

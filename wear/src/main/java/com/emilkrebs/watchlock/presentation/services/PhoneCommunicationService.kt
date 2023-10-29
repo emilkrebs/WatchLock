@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.Wearable
 
@@ -14,10 +15,23 @@ import com.google.android.gms.wearable.Wearable
  */
 class PhoneCommunicationService(private val context: Context) {
 
+    companion object {
+        fun getNodes(context: Context, onNodesReceived: (Collection<String>) -> Unit) {
+            Wearable.getNodeClient(context).connectedNodes.addOnSuccessListener { nodes ->
+                val nodeIds = nodes.map { it.id }
+                onNodesReceived(nodeIds)
+            }
+        }
+
+    }
+
     /**
      * Called when a message is received from the phone
      */
     var onMessageReceived: ((Message) -> Unit) = {}
+
+
+    var onLockStatusReceived: ((LockStatus) -> Unit) = {}
 
     /**
      * Called when a message fails to send to the phone
@@ -31,21 +45,11 @@ class PhoneCommunicationService(private val context: Context) {
                 val extras = intent.extras
                 val message = Message(extras?.getString("path")!!, extras.getByteArray("data")!!)
 
-                // check if message is a ping
-                if (message.isEqualTo(
-                        Message.fromString(
-                            PhoneCommunicationServiceDefaults.QUERY_PATH,
-                            "ping"
-                        )
-                    )
-                ) {
-                    // send a pong
-                    return sendMessage(
-                        Message.fromString(
-                            PhoneCommunicationServiceDefaults.RESPONSE_PATH,
-                            "pong"
-                        )
-                    ).start()
+                if (message.path == PhoneCommunicationServiceDefaults.RESPONSE_PATH) {
+                    // return the lock status
+                    val lockStatus =
+                        LockStatus.fromBoolean(message.data.toString(Charsets.UTF_8) == "phone_locked")
+                    onLockStatusReceived(lockStatus)
                 }
 
                 onMessageReceived(message)
@@ -64,99 +68,84 @@ class PhoneCommunicationService(private val context: Context) {
      * @true the phone is locked
      * @false the phone is unlocked
      */
-    fun getLockStatus(response: (LockStatus) -> Unit) {
-        fetch(
+    fun requestLockStatus() {
+        sendMessage(
             Message(
                 PhoneCommunicationServiceDefaults.QUERY_PATH,
                 "lock_status".toByteArray()
             )
-        ) {
-            if (it.path == PhoneCommunicationServiceDefaults.RESPONSE_PATH) {
-                // return the lock status
-                response(LockStatus.fromBoolean(it.data.toString(Charsets.UTF_8) == "phone_locked"))
-            }
-        }
+        )
     }
 
-    fun requestLockPhone(response: (RequestLockPhoneResult) -> Unit) {
-        fetch(
+    fun requestLockPhone() {
+        sendMessage(
             Message(
                 PhoneCommunicationServiceDefaults.COMMAND_PATH,
                 "lock_phone".toByteArray()
             )
-        ) {
-            val result = if (it.isEqualTo(
-                    Message.fromString(
-                        PhoneCommunicationServiceDefaults.RESPONSE_PATH,
-                        "rejected"
-                    )
-                )
-            ) {
-                RequestLockPhoneResult.REJECTED
-            } else if (it.isEqualTo(
-                    Message.fromString(
-                        PhoneCommunicationServiceDefaults.RESPONSE_PATH,
-                        "success"
-                    )
-                )
-            ) {
-                RequestLockPhoneResult.SUCCESS
-            } else {
-                RequestLockPhoneResult.FAILURE
-            }
-            response(result)
-        }
+        )
+//        ) {
+//            val result = if (it.isEqualTo(
+//                    Message.fromString(
+//                        PhoneCommunicationServiceDefaults.RESPONSE_PATH,
+//                        "rejected"
+//                    )
+//                )
+//            ) {
+//                RequestLockPhoneResult.REJECTED
+//            } else if (it.isEqualTo(
+//                    Message.fromString(
+//                        PhoneCommunicationServiceDefaults.RESPONSE_PATH,
+//                        "success"
+//                    )
+//                )
+//            ) {
+//                RequestLockPhoneResult.SUCCESS
+//            } else {
+//                RequestLockPhoneResult.FAILURE
+//            }
+//            response(result)
+//        }
     }
 
-    /**
-     * Sends a message to the phone and waits for a response
-     * @param message the message to send
-     */
-    private fun fetch(message: Message, response: (Message) -> Unit) {
-        sendMessage(message).start()
-        // send the message to the phone
-        val receiver = object : BroadcastReceiver() {
-            // create a broadcast receiver to receive messages from the phone
-            override fun onReceive(context: Context, intent: Intent) {
-                val extras = intent.extras
-                LocalBroadcastManager.getInstance(context).unregisterReceiver(this)
-                response(Message(extras?.getString("path")!!, extras.getByteArray("data")!!))
-            }
-        }
-        // register the broadcast receiver
-        LocalBroadcastManager.getInstance(context)
-            .registerReceiver(receiver, IntentFilter(Intent.ACTION_SEND))
-
-    }
 
     /**
      * Sends a message synchronously to the phone
      * @param message the message to send
      */
-    private fun sendMessage(message: Message): Thread {
-        return Thread {
-            getNodes(context).forEach {
-                val messageApiClient = Wearable.getMessageClient(context)
-                val sendMessageTask = messageApiClient.sendMessage(
-                    it,
-                    message.path,
-                    message.data
-                )
-                sendMessageTask.addOnFailureListener { e ->
-                    onFailure(e)
-                    return@addOnFailureListener
+    fun sendMessage(
+        message: Message,
+        onComplete: (Boolean, String?) -> Unit = { _, _ -> }
+    ) {
+        val messageApiClient = Wearable.getMessageClient(context)
+        getNodes(context) { nodes ->
+            if (nodes.isNotEmpty()) {
+                val tasks = mutableListOf<Task<Int>>()
+
+                for (node in nodes) {
+                    val sendMessageTask =
+                        messageApiClient.sendMessage(node, message.path, message.data)
+                            .addOnCompleteListener { task ->
+                                onComplete(
+                                    task.isSuccessful,
+                                    if (!task.isSuccessful) task.exception?.message else null
+                                )
+                            }
+
+                    tasks.add(sendMessageTask)
                 }
-                sendMessageTask.addOnCompleteListener {
-                    // return ok
-                    return@addOnCompleteListener
+
+                // Wait for all tasks to complete before returning.
+                Tasks.whenAll(tasks).addOnCompleteListener {
+                    // All tasks have completed.
+
                 }
+            } else {
+                onComplete(false, "No connected nodes found.")
             }
         }
     }
 
-    private fun getNodes(context: Context): Collection<String> {
-        return Tasks.await(Wearable.getNodeClient(context).connectedNodes).map { it.id }
-    }
 }
 
 class PhoneCommunicationServiceDefaults {
@@ -171,7 +160,6 @@ enum class RequestLockPhoneResult {
     SUCCESS,
     REJECTED,
     FAILURE,
-    UNKNOWN
 }
 
 enum class LockStatus(val value: Int) {
