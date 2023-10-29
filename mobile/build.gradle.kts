@@ -10,7 +10,7 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("/Users/emilkrebs/Library/CloudStorage/OneDrive-Personal/Anderes/WatchLock_Pass_adVhjL1624")
+            storeFile = file("../WatchLock.keystore")
             storePassword = "adVhjL1624"
             keyAlias = "key0"
             keyPassword = "adVhjL1624"
@@ -34,8 +34,8 @@ android {
         getByName("release") {
             isMinifyEnabled = false
             isDebuggable = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("release")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
 
         getByName("debug") {
@@ -64,5 +64,4 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    wearApp(project(":wear"))
 }
