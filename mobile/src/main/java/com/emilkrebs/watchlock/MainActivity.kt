@@ -26,7 +26,7 @@ enum class PingStatus {
     NONE
 }
 
-public const val PREFERENCE_FILE_KEY = "com.example.android.watchlock_preferences"
+const val PREFERENCE_FILE_KEY = "com.example.android.watchlock_preferences"
 class MainActivity : AppCompatActivity() {
 
     private lateinit var devicePolicyManager: DevicePolicyManager

@@ -5,7 +5,6 @@ import android.app.admin.DevicePolicyManager
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.emilkrebs.watchlock.PREFERENCE_FILE_KEY
-import com.emilkrebs.watchlock.R
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 import kotlinx.coroutines.SupervisorJob
