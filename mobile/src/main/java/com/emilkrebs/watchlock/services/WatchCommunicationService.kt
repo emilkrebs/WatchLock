@@ -1,11 +1,16 @@
 package com.emilkrebs.watchlock.services
 
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
 import android.content.Context
+import com.emilkrebs.watchlock.receivers.AdminReceiver
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.Wearable
 
 class WatchCommunicationService(private val context: Context) {
+    private var devicePolicyManager: DevicePolicyManager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    private var adminComponent: ComponentName = ComponentName(context, AdminReceiver::class.java)
 
 
     companion object {
@@ -24,6 +29,9 @@ class WatchCommunicationService(private val context: Context) {
 
     }
 
+    fun isAdminActive(): Boolean {
+        return devicePolicyManager.isAdminActive(adminComponent)
+    }
     fun pingWatch(onComplete: (Boolean, String?) -> Unit = { _, _ -> }) {
         sendMessage(Message.fromString(WatchCommunicationServiceDefaults.PING_PATH, "ping")) { success, message ->
             onComplete(success, message)

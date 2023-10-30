@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WatchLock</string>
+    <string name="lock_phone">Telefon sperren</string>
+    <string name="retry">Erneut versuchen</string>
+    <string name="no_phone_connected">Kein Telefon verbunden</string>
+    <string name="phone_locked">Telefon gesperrt</string>
+    <string name="phone_unlocked">Telefon entsperrt</string>
+    <string name="loading">Laden…</string>
+</resources>

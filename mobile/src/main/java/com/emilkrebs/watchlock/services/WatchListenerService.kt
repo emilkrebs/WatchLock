@@ -4,15 +4,22 @@ import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.emilkrebs.watchlock.PREFERENCE_FILE_KEY
 import com.emilkrebs.watchlock.R
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 import kotlinx.coroutines.SupervisorJob
 
-const val PING_BROADCAST_ACTION = "com.emilkrebs.watchlock.PING"
+const val ACTION_PING_BROADCAST = "com.emilkrebs.watchlock.PING"
+
 class WatchListenerService : WearableListenerService() {
     private val job = SupervisorJob()
+    private lateinit var watchCommunicationService: WatchCommunicationService
 
+    override fun onCreate() {
+        super.onCreate()
+        watchCommunicationService = WatchCommunicationService(this)
+    }
     override fun onMessageReceived(messageEvent: MessageEvent) {
         val message =
             Message.fromString(messageEvent.path, messageEvent.data.toString(Charsets.UTF_8))
@@ -28,13 +35,13 @@ class WatchListenerService : WearableListenerService() {
 
     private fun handleCommand(command: String) {
         val isActive =
-            getSharedPreferences(getString(R.string.preferences_file_key), MODE_PRIVATE).getBoolean(
+            getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE).getBoolean(
                 "isActive",
                 false
             )
 
         if (command == "lock_phone") {
-            if (isActive) {
+            if (isActive && watchCommunicationService.isAdminActive()) {
                 lockPhone()
             }
         }
@@ -47,18 +54,17 @@ class WatchListenerService : WearableListenerService() {
     }
 
     private fun handlePing(message: String) {
-        if(message == "ping") {
-            return WatchCommunicationService(this).sendMessage(
+        if (message == "ping") {
+            return watchCommunicationService.sendMessage(
                 Message.fromString(
                     WatchCommunicationServiceDefaults.PING_PATH,
                     "pong"
                 )
             )
-        }
-        else if(message == "pong") {
+        } else if (message == "pong") {
             // send broadcast to MainActivity
             val intent = Intent()
-            intent.action = PING_BROADCAST_ACTION
+            intent.action = ACTION_PING_BROADCAST
             intent.putExtra("ping", true)
 
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
@@ -66,7 +72,7 @@ class WatchListenerService : WearableListenerService() {
     }
 
     private fun sendLockStatus(isLocked: Boolean) {
-        WatchCommunicationService(this).sendMessage(
+        watchCommunicationService.sendMessage(
             Message.fromString(
                 WatchCommunicationServiceDefaults.LOCK_STATUS_PATH,
                 isLocked.toString()

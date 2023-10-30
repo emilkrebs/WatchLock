@@ -1,7 +1,11 @@
 <resources>
-    <string name="app_name">WatchLock</string>
-    <!--
-    This string is used for square devices and overridden by hello_world in
-    values-round/strings.xml for round devices.
-    -->
+    <string name="app_name" translatable="false">WatchLock</string>
+
+    <string name="lock_phone">Lock Phone</string>
+    <string name="retry">Retry</string>
+    <string name="no_phone_connected">No Phone Connected</string>
+
+    <string name="phone_locked">Phone Locked</string>
+    <string name="phone_unlocked">Phone Unlocked</string>
+    <string name="loading">Loading…</string>
 </resources>

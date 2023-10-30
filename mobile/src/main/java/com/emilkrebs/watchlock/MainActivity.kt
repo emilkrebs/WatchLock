@@ -11,7 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.emilkrebs.watchlock.receivers.AdminReceiver
-import com.emilkrebs.watchlock.services.PING_BROADCAST_ACTION
+import com.emilkrebs.watchlock.services.ACTION_PING_BROADCAST
 import com.emilkrebs.watchlock.services.WatchCommunicationService
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.MainScope
@@ -25,6 +25,8 @@ enum class PingStatus {
     FAILED,
     NONE
 }
+
+public const val PREFERENCE_FILE_KEY = "com.example.android.watchlock_preferences"
 class MainActivity : AppCompatActivity() {
 
     private lateinit var devicePolicyManager: DevicePolicyManager
@@ -57,7 +59,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 val isActive =
                     getSharedPreferences(
-                        getString(R.string.preferences_file_key),
+                        PREFERENCE_FILE_KEY,
                         MODE_PRIVATE
                     ).getBoolean(
                         "isActive",
@@ -92,7 +94,7 @@ class MainActivity : AppCompatActivity() {
 
     private val pingReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == PING_BROADCAST_ACTION) {
+            if (intent?.action == ACTION_PING_BROADCAST) {
                 // Handle the broadcast here
                 val pingValue = intent.getBooleanExtra("ping", false)
                 pingStatus = if (pingValue) {
@@ -165,7 +167,7 @@ class MainActivity : AppCompatActivity() {
         val activateButton = findViewById<MaterialButton>(R.id.activate_button)
 
         val isActive =
-            getSharedPreferences(getString(R.string.preferences_file_key), MODE_PRIVATE).getBoolean(
+            getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE).getBoolean(
                 "isActive",
                 false
             )
@@ -228,7 +230,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setWatchLockActive(isActive: Boolean) {
         val editor = getSharedPreferences(
-            getString(R.string.preferences_file_key),
+            PREFERENCE_FILE_KEY,
             MODE_PRIVATE
         ).edit()
         editor.putBoolean("isActive", isActive).apply()

@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,6 +34,7 @@ import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
+import com.emilkrebs.watchlock.R
 import com.emilkrebs.watchlock.presentation.services.LockStatus
 import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationService
 import com.emilkrebs.watchlock.presentation.theme.WatchLockTheme
@@ -121,13 +123,13 @@ fun NotConnected(onRetry: () -> Unit = {}) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "No phone connected",
+                text = stringResource(R.string.no_phone_connected),
                 color = MaterialTheme.colors.onBackground,
                 fontSize = 16.sp
             )
             Spacer(modifier = Modifier.height(18.dp))
             Chip(onClick = onRetry,
-                label = { Text("Retry ", color = MaterialTheme.colors.onBackground) }, icon = {
+                label = { Text(stringResource(R.string.retry), color = MaterialTheme.colors.onBackground) }, icon = {
                     Icon(
                         Icons.Filled.Sync,
                         contentDescription = "sync icon",
@@ -170,7 +172,7 @@ fun LockView(context: Context) {
     Chip(onClick = {
         PhoneCommunicationService(context).requestLockPhone()
     },
-        label = { Text("Lock phone", color = MaterialTheme.colors.onBackground) }, icon = {
+        label = { Text(stringResource(R.string.lock_phone), color = MaterialTheme.colors.onBackground) }, icon = {
             Icon(
                 Icons.Filled.Lock,
                 contentDescription = "lock icon",
@@ -207,19 +209,19 @@ fun StatusIcon(lockStatus: LockStatus) {
 fun StatusText(lockStatus: LockStatus) {
     return when (lockStatus) {
         LockStatus.LOCKED -> Text(
-            text = "Phone Locked",
+            text = stringResource(R.string.phone_locked),
             color = MaterialTheme.colors.onBackground,
             fontSize = 16.sp
         )
 
         LockStatus.UNLOCKED -> Text(
-            text = "Phone Unlocked",
+            text = stringResource(R.string.phone_unlocked),
             color = MaterialTheme.colors.onBackground,
             fontSize = 16.sp
         )
 
         LockStatus.UNKNOWN -> Text(
-            text = "Loading",
+            text = stringResource(R.string.loading),
             color = MaterialTheme.colors.onBackground,
             fontSize = 16.sp
         )
