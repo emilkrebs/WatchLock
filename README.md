@@ -17,6 +17,14 @@
 
 WatchLock allows you to lock your phone from your watch. Very helpful when you want to let someone borrow your phone but don't want them to snoop around.
 
+## Features
+
+- Lock your phone from your Watch
+- View the if the phone is locked from the watch
+- Dashboard in the mobile application to check if everything is working
+
+Languages: English, German
+
 # How to Install WatchLock on mobile
 1. Download the latest version of WatchLock from the [releases page](https://github.com/emilkrebs/WatchLock/releases).
 
