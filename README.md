@@ -10,6 +10,7 @@
 <div id="badges" align="center">
 
 [![Build](https://github.com/emilkrebs/WatchLock/actions/workflows/android.yml/badge.svg)](https://github.com/emilkrebs/WatchLock/actions/workflows/android.yml)
+[![GitHub release](https://img.shields.io/github/downloads-pre/emilkrebs/WatchLock/latest/total)](https://github.com/emilkrebs/WatchLock/releases)
 
 </div>
 
