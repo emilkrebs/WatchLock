@@ -1,12 +1,20 @@
 <div id="logo" align="center">
   <a href="https://github.com/emilkrebs/WatchLock" target="_blank" rel="noopener noreferrer">
-   <img width="256" alt="WatchLock Logo" src="./images/WatchLock_Logo.svg">
+   <img width="512" alt="WatchLock Logo" src="./images/WatchLock_Logo.svg">
  </a>
   <h3>
     Don't let people abuse your phone
   </h3>
 </div>
 
+<div id="badges" align="center">
+
+[![Build](https://github.com/emilkrebs/generator-discord/actions/workflows/build.yml/badge.svg)](https://github.com/emilkrebs/generator-discord/actions/workflows/build.yml)
+[![Tests](https://github.com/emilkrebs/generator-discord/actions/workflows/test.yml/badge.svg)](https://github.com/emilkrebs/generator-discord/actions/workflows/test.yml)
+[![downloads](https://img.shields.io/npm/dw/generator-discord?color=orange)](https://www.npmjs.com/package/generator-discord)
+[![version](https://img.shields.io/npm/v/generator-discord)](https://www.npmjs.com/package/generator-discord)
+
+</div>
 
 <hr>
 
