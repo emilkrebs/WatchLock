@@ -20,11 +20,12 @@ android {
     }
 
     signingConfigs {
+        // signingConfigs using env
         create("release") {
             storeFile = file("../WatchLock.keystore")
-            storePassword = "adVhjL1624"
-            keyAlias = "keyEm"
-            keyPassword = "NNrEhGMS"
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword =  System.getenv("KEY_PASSWORD")
         }
     }
 
