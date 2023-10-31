@@ -1,6 +1,6 @@
 <div id="logo" align="center">
   <a href="https://github.com/emilkrebs/WatchLock" target="_blank" rel="noopener noreferrer">
-   <img width="256" alt="WatchLock Logo" src="./images/WatchLock.png">
+   <img width="256" alt="WatchLock Logo" src="./images/WatchLock_Banner.png">
  </a>
   <h3>
     Don't let people abuse your phone
@@ -15,8 +15,6 @@
 </div>
 
 <hr>
-
-WatchLock allows you to lock your phone from your watch. Very helpful when you want to let someone borrow your phone but don't want them to snoop around.
 
 ## Features
 
