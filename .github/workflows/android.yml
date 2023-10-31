@@ -1,4 +1,4 @@
-name: Android CI
+name: Build 
 
 on:
   push:
@@ -24,6 +24,10 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
+      env:
+        KEYSTORE_PASSWORD: ${{secrets.KEYSTORE_PASSWORD}}
+        KEY_ALIAS: ${{secrets.KEY_ALIAS}}
+        KEY_PASSWORD: ${{secrets.KEY_PASSWORD}}
 
   release:
     name: Assemble Release
@@ -42,4 +46,8 @@ jobs:
       run: chmod +x gradlew
     - name: Assemble release with Gradle
       run: ./gradlew assembleRelease
+      env:
+        KEYSTORE_PASSWORD: ${{secrets.KEYSTORE_PASSWORD}}
+        KEY_ALIAS: ${{secrets.KEY_ALIAS}}
+        KEY_PASSWORD: ${{secrets.KEY_PASSWORD}}
     
