@@ -1,6 +1,6 @@
 <div id="logo" align="center">
   <a href="https://github.com/emilkrebs/WatchLock" target="_blank" rel="noopener noreferrer">
-   <img width="256" alt="WatchLock Logo" src="./images/WatchLock_Banner.png">
+   <img width="256" alt="WatchLock Logo" src="./images/WatchLock.png">
  </a>
   <h3>
     Don't let people abuse your phone
@@ -25,8 +25,9 @@
 Languages: English, German
 
 # How to Install WatchLock on mobile
-1. Download the latest version of WatchLock from the [releases page](https://github.com/emilkrebs/WatchLock/releases).
-
+1. Download the latest version of WatchLock on your phone from the [releases page](https://github.com/emilkrebs/WatchLock/releases/latest).
+3. Click the apk-file and tap install.
+   
 You may get a security warning when installing the app. This is because the app is not signed by Google. You can safely ignore this warning.
 
  <img width="256" alt="Security Warning" src="./images/security_warning.jpg">
@@ -61,7 +62,7 @@ You may get a security warning when installing the app. This is because the app 
 
 ## Install WatchLock 
 
-1. Download the latest version of WatchLock from the [releases page](https://github.com/emilkrebs/WatchLock/releases).
+1. Download the latest version of WatchLock from the [releases page](https://github.com/emilkrebs/WatchLock/releases/latest).
 2. Run `adb install <path to apk>` in a terminal.
 
 ![Install Terminal](./images/installing_terminal.png)
