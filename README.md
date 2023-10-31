@@ -22,7 +22,7 @@ WatchLock allows you to lock your phone from your watch. Very helpful when you w
 
 You may get a security warning when installing the app. This is because the app is not signed by Google. You can safely ignore this warning.
 
-![Security Warning](./images/security_warning.jpg)
+ <img width="256" alt="Security Warning" src="./images/security_warning.jpg">
 
 # How to Install WatchLock on WearOS
 
@@ -61,5 +61,11 @@ You may get a security warning when installing the app. This is because the app 
 
 # Screenshots
 
-![Mobile Screenshot](./images/watchlock_mobile.jpg)
+Mobile
+
+<img width="512" alt="WearOS" src="./images/watchlock_mobile.jpg">
+
+WearOS
+
 ![Wear Screenshot](./images/watchlock_wear.png)
+
