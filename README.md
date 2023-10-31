@@ -9,10 +9,7 @@
 
 <div id="badges" align="center">
 
-[![Build](https://github.com/emilkrebs/generator-discord/actions/workflows/build.yml/badge.svg)](https://github.com/emilkrebs/generator-discord/actions/workflows/build.yml)
-[![Tests](https://github.com/emilkrebs/generator-discord/actions/workflows/test.yml/badge.svg)](https://github.com/emilkrebs/generator-discord/actions/workflows/test.yml)
-[![downloads](https://img.shields.io/npm/dw/generator-discord?color=orange)](https://www.npmjs.com/package/generator-discord)
-[![version](https://img.shields.io/npm/v/generator-discord)](https://www.npmjs.com/package/generator-discord)
+[![Build](https://github.com/emilkrebs/WatchLock/actions/workflows/android.yml/badge.svg)](https://github.com/emilkrebs/WatchLock/actions/workflows/android.yml)
 
 </div>
 
@@ -48,7 +45,7 @@
 
 ## Install WatchLock 
 
-1. Download the latest version of WatchLock from the [releases page](link).
+1. Download the latest version of WatchLock from the [releases page](https://github.com/emilkrebs/WatchLock/releases/).
 2. Run `adb install <path to apk>` in a terminal.
 
 ![Install Terminal](./images/installing_terminal.png)
