@@ -10,6 +10,7 @@
 <div id="badges" align="center">
 
 [![Build](https://github.com/emilkrebs/WatchLock/actions/workflows/android.yml/badge.svg)](https://github.com/emilkrebs/WatchLock/actions/workflows/android.yml)
+![GitHub Latest Release)](https://img.shields.io/github/v/release/emilkrebs/WatchLock?logo=github)
 
 </div>
 
@@ -17,12 +18,20 @@
 
 WatchLock allows you to lock your phone from your watch. Very helpful when you want to let someone borrow your phone but don't want them to snoop around.
 
-# How to Install WatchLock on WearOS
+## Features
+
+- Lock your phone from your Watch
+- View the if the phone is locked from the watch
+- Dashboard in the mobile application to check if everything is working
+
+Languages: English, German
+
+# How to Install WatchLock on mobile
 1. Download the latest version of WatchLock from the [releases page](https://github.com/emilkrebs/WatchLock/releases).
 
 You may get a security warning when installing the app. This is because the app is not signed by Google. You can safely ignore this warning.
 
-![Security Warning](./images/security_warning.jpg)
+ <img width="256" alt="Security Warning" src="./images/security_warning.jpg">
 
 # How to Install WatchLock on WearOS
 
@@ -61,5 +70,11 @@ You may get a security warning when installing the app. This is because the app 
 
 # Screenshots
 
-![Mobile Screenshot](./images/watchlock_mobile.jpg)
+Mobile
+
+<img width="512" alt="WearOS" src="./images/watchlock_mobile.jpg">
+
+WearOS
+
 ![Wear Screenshot](./images/watchlock_wear.png)
+
