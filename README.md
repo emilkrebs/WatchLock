@@ -1,4 +1,14 @@
+<div id="logo" align="center">
+  <a href="https://github.com/emilkrebs/WatchLock" target="_blank" rel="noopener noreferrer">
+   <img width="256" alt="WatchLock Logo" src="./images/WatchLock_Logo.svg">
+ </a>
+  <h3>
+    Don't let people abuse your phone
+  </h3>
+</div>
 
+
+<hr>
 
 # How to Install WatchLock on WearOS
 
@@ -22,7 +32,7 @@
 
 ## Computer Setup
 
-1. Install ADB on your computer. You can find instructions [here](https://www.xda-developers.com/install-adb-windows-macos-linux/).
+1. Install ADB on your computer. You can find instructions [here](https://developer.android.com/tools/adb).
 2. Connect your computer to the same network as your watch.
 3. Run `adb pair <pairng address>` in a terminal.
 
