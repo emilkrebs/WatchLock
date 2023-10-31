@@ -17,7 +17,7 @@
 
 WatchLock allows you to lock your phone from your watch. Very helpful when you want to let someone borrow your phone but don't want them to snoop around.
 
-# How to Install WatchLock on WearOS
+# How to Install WatchLock on mobile
 1. Download the latest version of WatchLock from the [releases page](https://github.com/emilkrebs/WatchLock/releases).
 
 You may get a security warning when installing the app. This is because the app is not signed by Google. You can safely ignore this warning.
