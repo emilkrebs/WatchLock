@@ -26,7 +26,7 @@ jobs:
       run: ./gradlew build
       env:
         KEYSTORE_PASSWORD: ${{secrets.KEYSTORE_PASSWORD}}
-        KEYSTORE_ALIAS: ${{secrets.KEYSTORE_ALIAS}}
+        KEY_ALIAS: ${{secrets.KEY_ALIAS}}
         KEY_PASSWORD: ${{secrets.KEY_PASSWORD}}
 
   release:
@@ -48,6 +48,6 @@ jobs:
       run: ./gradlew assembleRelease
       env:
         KEYSTORE_PASSWORD: ${{secrets.KEYSTORE_PASSWORD}}
-        KEYSTORE_ALIAS: ${{secrets.KEYSTORE_ALIAS}}
+        KEY_ALIAS: ${{secrets.KEY_ALIAS}}
         KEY_PASSWORD: ${{secrets.KEY_PASSWORD}}
     
