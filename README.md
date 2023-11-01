@@ -20,7 +20,7 @@
 
 - Lock your phone from your Watch
 - View the if the phone is locked from your watch
-- Dashboard on mobile application to check if everything is working
+- Dashboard on the mobile application to check if everything is working
 
 Languages: English, German
 
