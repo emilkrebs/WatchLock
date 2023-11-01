@@ -56,7 +56,7 @@ You may get a security warning when installing the app. This is because the app 
 
 1. Install ADB on your computer. You can find instructions [here](https://developer.android.com/tools/adb).
 2. Connect your computer to the same network as your watch.
-3. Run `adb pair <pairng address>` in a terminal.
+3. Run `adb pair <pairing address>` in a terminal.
 
 ![Pairing Terminal](./images/pairing_terminal.png)
 
