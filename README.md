@@ -19,12 +19,12 @@
 ## Features
 
 - Lock your phone from your Watch
-- View the if the phone is locked from the watch
-- Dashboard in the mobile application to check if everything is working
+- View the if the phone is locked from your watch
+- Dashboard on mobile application to check if everything is working
 
 Languages: English, German
 
-# How to Install WatchLock on mobile
+# How to Install WatchLock on Android
 1. Download the latest version of WatchLock on your phone from the [releases page](https://github.com/emilkrebs/WatchLock/releases/latest).
 3. Click the apk-file and tap install.
    
