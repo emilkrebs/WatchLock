@@ -10,7 +10,7 @@
 <div id="badges" align="center">
 
 [![Build](https://github.com/emilkrebs/WatchLock/actions/workflows/android.yml/badge.svg)](https://github.com/emilkrebs/WatchLock/actions/workflows/android.yml)
-![GitHub Latest Release)](https://img.shields.io/github/v/release/emilkrebs/WatchLock?logo=github)
+[![GitHub Latest Release)](https://img.shields.io/github/v/release/emilkrebs/WatchLock?logo=github)](https://github.com/emilkrebs/WatchLock/releases/latest)
 
 </div>
 
@@ -19,12 +19,12 @@
 ## Features
 
 - Lock your phone from your Watch
-- View the if the phone is locked from the watch
-- Dashboard in the mobile application to check if everything is working
+- View the if the phone is locked from your watch
+- Dashboard on the mobile application to check if everything is working
 
 Languages: English, German
 
-# How to Install WatchLock on mobile
+# How to Install WatchLock on Android
 1. Download the latest version of WatchLock on your phone from the [releases page](https://github.com/emilkrebs/WatchLock/releases/latest).
 3. Click the apk-file and tap install.
    
@@ -56,7 +56,7 @@ You may get a security warning when installing the app. This is because the app 
 
 1. Install ADB on your computer. You can find instructions [here](https://developer.android.com/tools/adb).
 2. Connect your computer to the same network as your watch.
-3. Run `adb pair <pairng address>` in a terminal.
+3. Run `adb pair <pairing address>` in a terminal.
 
 ![Pairing Terminal](./images/pairing_terminal.png)
 
