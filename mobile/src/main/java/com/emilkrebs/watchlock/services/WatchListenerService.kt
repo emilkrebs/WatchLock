@@ -1,13 +1,17 @@
 package com.emilkrebs.watchlock.services
 
+import android.app.ActivityManager
+import android.app.ActivityManager.RunningAppProcessInfo
 import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
+import android.content.Context
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.emilkrebs.watchlock.PREFERENCE_FILE_KEY
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 import kotlinx.coroutines.SupervisorJob
+
 
 const val ACTION_PING_BROADCAST = "com.emilkrebs.watchlock.PING"
 
