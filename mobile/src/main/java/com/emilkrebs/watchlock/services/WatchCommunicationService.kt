@@ -9,17 +9,18 @@ import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.Wearable
 
 class WatchCommunicationService(private val context: Context) {
-    private var devicePolicyManager: DevicePolicyManager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    private var devicePolicyManager: DevicePolicyManager =
+        context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     private var adminComponent: ComponentName = ComponentName(context, AdminReceiver::class.java)
 
 
     companion object {
-
         fun isWatchConnected(context: Context, onConnected: (Boolean) -> Unit) {
             getNodes(context) { nodes ->
                 onConnected(nodes.isNotEmpty())
             }
         }
+
         fun getNodes(context: Context, onNodesReceived: (Collection<String>) -> Unit) {
             Wearable.getNodeClient(context).connectedNodes.addOnSuccessListener { nodes ->
                 val nodeIds = nodes.map { it.id }
@@ -32,11 +33,18 @@ class WatchCommunicationService(private val context: Context) {
     fun isAdminActive(): Boolean {
         return devicePolicyManager.isAdminActive(adminComponent)
     }
+
     fun pingWatch(onComplete: (Boolean, String?) -> Unit = { _, _ -> }) {
-        sendMessage(Message.fromString(WatchCommunicationServiceDefaults.PING_PATH, "ping")) { success, message ->
+        sendMessage(
+            Message.fromString(
+                WatchCommunicationServiceDefaults.PING_PATH,
+                "ping"
+            )
+        ) { success, message ->
             onComplete(success, message)
         }
     }
+
     fun sendMessage(
         message: Message,
         onComplete: (Boolean, String?) -> Unit = { _, _ -> }
@@ -81,6 +89,7 @@ class WatchCommunicationServiceDefaults {
         const val LOCK_STATUS_PATH = "/wearable/lock_status/"
     }
 }
+
 /**
  * A message object
  * @param path the path of the message

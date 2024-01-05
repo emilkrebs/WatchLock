@@ -1,25 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">WatchLock</string>
+    <string name="app_name" translatable="false">WatchLock</string>
+
     <string name="checklist_title">Dashboard</string>
-    <string name="admin_explanation">WatchLock benötigt Administratorrechte, um den Bildschirm zu sperren und im Hintergrund auszuführen.</string>
+    <string name="admin_explanation">WatchLock benötigt Administratorrechte, um den Bildschirm zu sperren und im Hintergrund laufen zu können.</string>
 
-    <!-- Checkliste -->
-    <string name="admin_active">Admin aktiv ✓</string>
-    <string name="admin_inactive">Admin inaktiv ✗</string>
+    <string name="admin_active">✓ Administrator aktiv</string>
+    <string name="admin_inactive">✗ Administrator nicht aktiv</string>
 
-    <string name="watch_connected">SmartWatch verbunden ✓</string>
-    <string name="no_watch_connected">Keine SmartWatch verbunden ✗</string>
+    <string name="watch_connected">✓ Uhr verbunden</string>
+    <string name="no_watch_connected">✗ Keine Uhr verbunden</string>
 
-    <string name="watchlock_active">WatchLock aktiv ✓</string>
-    <string name="watchlock_inactive">WatchLock inaktiv ✗</string>
+    <string name="watchlock_active">✓ WatchLock aktiv</string>
+    <string name="watchlock_inactive">✗ WatchLock nicht aktiv</string>
+
+    <string name="ping_success">✓ Ping erfolgreich</string>
+    <string name="ping_failed">✗ Ping fehlgeschlagen</string>
 
     <string name="activate_watchlock">WatchLock aktivieren</string>
     <string name="deactivate_watchlock">WatchLock deaktivieren</string>
 
     <string name="ping">Ping</string>
-    <string name="ping_pending">Ping wird durchgeführt…</string>
-    <string name="ping_success">Ping erfolgreich ✓</string>
-    <string name="ping_failed">Ping fehlgeschlagen ✗</string>
-
+    <string name="ping_pending">Ping in Bearbeitung…</string>
 </resources>

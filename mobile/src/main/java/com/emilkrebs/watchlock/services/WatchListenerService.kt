@@ -19,6 +19,7 @@ class WatchListenerService : WearableListenerService() {
         super.onCreate()
         watchCommunicationService = WatchCommunicationService(this)
     }
+
     override fun onMessageReceived(messageEvent: MessageEvent) {
         val message =
             Message.fromString(messageEvent.path, messageEvent.data.toString(Charsets.UTF_8))
@@ -78,7 +79,6 @@ class WatchListenerService : WearableListenerService() {
             )
         )
     }
-
 
     override fun onDestroy() {
         super.onDestroy()

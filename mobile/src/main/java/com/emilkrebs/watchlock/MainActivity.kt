@@ -18,7 +18,6 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-
 enum class PingStatus {
     SUCCESS,
     PENDING,
@@ -27,17 +26,15 @@ enum class PingStatus {
 }
 
 const val PREFERENCE_FILE_KEY = "com.example.android.watchlock_preferences"
-class MainActivity : AppCompatActivity() {
 
+class MainActivity : AppCompatActivity() {
     private lateinit var devicePolicyManager: DevicePolicyManager
     private lateinit var adminComponent: ComponentName
 
     private val mainScope = MainScope()
-
     private var pingStatus = PingStatus.NONE
-
     private val pingTimeoutRunnable = Runnable {
-        if(pingStatus == PingStatus.PENDING) {
+        if (pingStatus == PingStatus.PENDING) {
             pingStatus = PingStatus.FAILED
             checkPing()
         }
@@ -71,19 +68,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         pingButton.setOnClickListener {
-            mainScope.launch {
-                pingStatus = try {
-                    WatchCommunicationService(applicationContext).pingWatch()
-
-                    // set the ping status to failed after 5 seconds
-                    Handler(Looper.getMainLooper()).postDelayed(pingTimeoutRunnable, 8000)
-
-                    PingStatus.PENDING
-                } catch (e: Exception) {
-                    PingStatus.FAILED
-                }
-                checkPing()
-            }
+            pingWatch()
         }
         val filter = IntentFilter("com.emilkrebs.watchlock.PING")
         LocalBroadcastManager.getInstance(this)
@@ -108,14 +93,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     override fun onResume() {
         super.onResume()
 
         // check all items of the checklist
         checkAllItems()
     }
-
 
     override fun onDestroy() {
         super.onDestroy()
@@ -127,6 +110,21 @@ class MainActivity : AppCompatActivity() {
         checkHasAdminPrivileges()
         checkIsWatchConnected()
         checkIsWatchLockActive()
+    }
+
+    private fun pingWatch() {
+        mainScope.launch {
+            pingStatus = try {
+                WatchCommunicationService(applicationContext).pingWatch()
+                // set the ping status to failed after 5 seconds
+                Handler(Looper.getMainLooper()).postDelayed(pingTimeoutRunnable, 8000)
+
+                PingStatus.PENDING
+            } catch (e: Exception) {
+                PingStatus.FAILED
+            }
+            checkPing()
+        }
     }
 
     private fun checkIsWatchConnected() {
@@ -192,7 +190,7 @@ class MainActivity : AppCompatActivity() {
         val pingButton = findViewById<MaterialButton>(R.id.ping_button) ?: return
         val pingText = findViewById<TextView>(R.id.ping_text) ?: return
 
-        when(pingStatus) {
+        when (pingStatus) {
             PingStatus.SUCCESS -> {
                 pingButton.text = getString(R.string.ping)
                 pingButton.isEnabled = true
@@ -202,6 +200,7 @@ class MainActivity : AppCompatActivity() {
                 pingText.text = getString(R.string.ping_success)
                 pingText.setTextColor(getColor(R.color.success))
             }
+
             PingStatus.PENDING -> {
                 pingButton.text = getString(R.string.ping_pending)
                 pingButton.isEnabled = false
@@ -209,6 +208,7 @@ class MainActivity : AppCompatActivity() {
 
                 pingText.visibility = TextView.GONE
             }
+
             PingStatus.FAILED -> {
                 pingButton.text = getString(R.string.ping)
                 pingButton.isEnabled = true
@@ -218,6 +218,7 @@ class MainActivity : AppCompatActivity() {
                 pingText.text = getString(R.string.ping_failed)
                 pingText.setTextColor(getColor(R.color.danger))
             }
+
             PingStatus.NONE -> {
                 pingButton.text = getString(R.string.ping)
                 pingButton.isEnabled = true
@@ -239,7 +240,6 @@ class MainActivity : AppCompatActivity() {
     private fun showRequestAdminDialog() {
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
         val explanation = getString(R.string.admin_explanation)
-        println(explanation)
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
         intent.putExtra(
             DevicePolicyManager.EXTRA_ADD_EXPLANATION,
@@ -256,6 +256,5 @@ class MainActivity : AppCompatActivity() {
                 statusText.setTextColor(getColor(R.color.success))
                 setWatchLockActive(true)
             }
-
         }
 }
