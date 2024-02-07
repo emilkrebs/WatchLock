@@ -19,23 +19,11 @@ android {
         }
     }
 
-    signingConfigs {
-
-        // signingConfigs using env
-        create("release") {
-            storeFile = file("../WatchLock_Keystore.jks")
-            storePassword = System.getenv("KEYSTORE_PASSWORD")
-            keyAlias = System.getenv("KEY_ALIAS")
-            keyPassword =  System.getenv("KEY_PASSWORD")
-        }
-    }
-
     buildTypes {
         release {
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

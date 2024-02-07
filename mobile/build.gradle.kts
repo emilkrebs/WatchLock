@@ -8,17 +8,6 @@ android {
     namespace = "com.emilkrebs.watchlock"
     compileSdk = 34
 
-    signingConfigs {
-
-        // signingConfigs using env
-        create("release") {
-            storeFile = file("../WatchLock_Keystore.jks")
-            storePassword = System.getenv("KEYSTORE_PASSWORD")
-            keyAlias = System.getenv("KEY_ALIAS")
-            keyPassword =  System.getenv("KEY_PASSWORD")
-        }
-    }
-
     defaultConfig {
         applicationId = "com.emilkrebs.watchlock"
         minSdk = 29
@@ -37,7 +26,6 @@ android {
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
 
@@ -62,7 +50,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.gms:play-services-wearable:18.1.0")
-    implementation("com.google.android.material:material:1.10.0")
+    implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
