@@ -44,6 +44,14 @@ class WatchListenerService : WearableListenerService() {
             if (isActive && watchCommunicationService.isAdminActive()) {
                 lockPhone()
             }
+            else {
+                watchCommunicationService.sendMessage(
+                    Message.fromString(
+                        WatchCommunicationServiceDefaults.COMMAND_PATH,
+                        "not_active"
+                    )
+                )
+            }
         }
     }
 
