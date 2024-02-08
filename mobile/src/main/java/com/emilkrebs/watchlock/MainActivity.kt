@@ -1,22 +1,70 @@
 package com.emilkrebs.watchlock
 
-import android.app.Activity
 import android.app.admin.DevicePolicyManager
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.ComponentName
+import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.widget.TextView
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.emilkrebs.watchlock.receivers.AdminReceiver
 import com.emilkrebs.watchlock.services.ACTION_PING_BROADCAST
 import com.emilkrebs.watchlock.services.WatchCommunicationService
-import com.google.android.material.button.MaterialButton
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import com.emilkrebs.watchlock.ui.theme.WatchLockTheme
 
 enum class PingStatus {
     SUCCESS,
@@ -25,59 +73,75 @@ enum class PingStatus {
     NONE
 }
 
+data class CheckListItem(val text: String, val success: Boolean)
+
 const val PREFERENCE_FILE_KEY = "com.example.android.watchlock_preferences"
+val pingFilter = IntentFilter("com.emilkrebs.watchlock.PING")
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var devicePolicyManager: DevicePolicyManager
-    private lateinit var adminComponent: ComponentName
-
-    private val mainScope = MainScope()
-    private var pingStatus = PingStatus.NONE
-    private val pingTimeoutRunnable = Runnable {
-        if (pingStatus == PingStatus.PENDING) {
-            pingStatus = PingStatus.FAILED
-            checkPing()
-        }
-    }
-
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        // get the device policy manager and the admin component
-        devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        adminComponent = ComponentName(this, AdminReceiver::class.java)
+        setContent {
+            MobileApp(this)
+        }
+    }
+}
 
-        val pingButton = findViewById<TextView>(R.id.ping_button)
-        // set the click listener for the activate button
-        findViewById<MaterialButton>(R.id.activate_button).setOnClickListener {
-            if (!devicePolicyManager.isAdminActive(adminComponent)) {
-                showRequestAdminDialog()
-            } else {
-                val isActive =
-                    getSharedPreferences(
-                        PREFERENCE_FILE_KEY,
-                        MODE_PRIVATE
-                    ).getBoolean(
-                        "isActive",
-                        false
-                    )
-                setWatchLockActive(!isActive)
-                checkIsWatchLockActive()
-            }
+@Composable
+fun OnLifecycleEvent(onEvent: (owner: LifecycleOwner, event: Lifecycle.Event) -> Unit) {
+    val eventHandler = rememberUpdatedState(onEvent)
+    val lifecycleOwner = rememberUpdatedState(LocalLifecycleOwner.current)
+
+    DisposableEffect(lifecycleOwner.value) {
+        val lifecycle = lifecycleOwner.value.lifecycle
+        val observer = LifecycleEventObserver { owner, event ->
+            eventHandler.value(owner, event)
         }
 
-        pingButton.setOnClickListener {
-            pingWatch()
+        lifecycle.addObserver(observer)
+        onDispose {
+            lifecycle.removeObserver(observer)
         }
-        val filter = IntentFilter("com.emilkrebs.watchlock.PING")
-        LocalBroadcastManager.getInstance(this)
-            .registerReceiver(pingReceiver, filter)
+    }
+}
 
-        checkAllItems()
+@Composable
+fun MobileApp(context: Context) {
+    var pingStatus by remember { mutableStateOf(PingStatus.NONE) }
+    var watchConnected by remember { mutableStateOf(false) }
+    var adminActive by remember { mutableStateOf(false) }
+    var watchLockEnabled by remember {
+        mutableStateOf(
+            context.getSharedPreferences(
+                PREFERENCE_FILE_KEY,
+                MODE_PRIVATE
+            ).getBoolean("isActive", false)
+        )
+    }
+    var mainButtonText by remember { mutableStateOf("Activate WatchLock") }
+
+    val pingTimeoutRunnable = Runnable {
+        if (pingStatus == PingStatus.PENDING) {
+            pingStatus = PingStatus.FAILED
+        }
     }
 
-    private val pingReceiver = object : BroadcastReceiver() {
+    mainButtonText =
+        if (watchLockEnabled) "Deactivate WatchLock"
+        else if (!adminActive) "Activate WatchLock (Admin required)"
+        else "Activate WatchLock"
+
+
+    LaunchedEffect(Unit) {
+        // Check if the watch is connected
+        WatchCommunicationService.isWatchConnected(context) { connected ->
+            watchConnected = connected
+        }
+    }
+
+    // Broadcast receiver for the ping
+    val pingReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == ACTION_PING_BROADCAST) {
                 // Handle the broadcast here
@@ -87,174 +151,281 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     PingStatus.FAILED
                 }
-                Handler(Looper.getMainLooper()).removeCallbacks(pingTimeoutRunnable)
-                checkPing()
             }
         }
     }
 
-    override fun onResume() {
-        super.onResume()
+    // register the ping receiver
+    LocalBroadcastManager.getInstance(context)
+        .registerReceiver(pingReceiver, pingFilter)
 
-        // check all items of the checklist
-        checkAllItems()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        unregisterReceiver(pingReceiver)
-        mainScope.cancel() // Cancel the CoroutineScope to avoid leaks
-    }
-
-    private fun checkAllItems() {
-        checkHasAdminPrivileges()
-        checkIsWatchConnected()
-        checkIsWatchLockActive()
-    }
-
-    private fun pingWatch() {
-        mainScope.launch {
-            pingStatus = try {
-                WatchCommunicationService(applicationContext).pingWatch()
-                // set the ping status to failed after 5 seconds
-                Handler(Looper.getMainLooper()).postDelayed(pingTimeoutRunnable, 8000)
-
-                PingStatus.PENDING
-            } catch (e: Exception) {
-                PingStatus.FAILED
+    OnLifecycleEvent { _, event ->
+        when (event) {
+            Lifecycle.Event.ON_RESUME -> {
+                adminActive = isAdminActive(context)
             }
-            checkPing()
+
+            else -> {}
         }
     }
 
-    private fun checkIsWatchConnected() {
-        val watchText = findViewById<TextView>(R.id.watch_connected_text) ?: return
+    WatchLockTheme(darkTheme = true) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset(y = (-32).dp)
+                    .background(MaterialTheme.colorScheme.background),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                CheckList(watchConnected, pingStatus, adminActive, watchLockEnabled)
 
-        mainScope.launch {
-            WatchCommunicationService.isWatchConnected(applicationContext) {
-                if (it) {
-                    watchText.text = getString(R.string.watch_connected)
-                    watchText.setTextColor(getColor(R.color.success))
-                } else {
-                    watchText.text = getString(R.string.no_watch_connected)
-                    watchText.setTextColor(getColor(R.color.danger))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Button(
+                        onClick = {
+                            watchLockEnabled = if (!adminActive) {
+                                showRequestAdminDialog(context)
+                                true
+                            } else {
+                                !watchLockEnabled
+                            }
+                            context.getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE).edit()
+                                .putBoolean("isActive", watchLockEnabled).apply()
+
+                            mainButtonText =
+                                if (watchLockEnabled) "Deactivate WatchLock" else "Activate WatchLock"
+                        },
+
+                        ) {
+                        Text(
+                            mainButtonText,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                    PingButton(pingStatus) {
+                        pingStatus = try {
+                            WatchCommunicationService(context).pingWatch()
+                            Handler(Looper.getMainLooper()).postDelayed(pingTimeoutRunnable, 8000)
+                            PingStatus.PENDING
+                        } catch (e: Exception) {
+                            PingStatus.FAILED
+                        }
+                    }
                 }
             }
-
         }
     }
-
-    private fun checkHasAdminPrivileges() {
-        val adminText = findViewById<TextView>(R.id.admin_text)
-        if (!devicePolicyManager.isAdminActive(adminComponent)) {
-            adminText.text = getString(R.string.admin_inactive)
-            adminText.setTextColor(getColor(R.color.danger))
-            adminText.setShadowLayer(1f, 0f, 0f, getColor(R.color.black))
-
-            adminText.setOnClickListener {
-                showRequestAdminDialog()
-            }
-        } else {
-            adminText.text = getString(R.string.admin_active)
-            adminText.setTextColor(getColor(R.color.success))
-        }
-    }
-
-    private fun checkIsWatchLockActive() {
-        val watchLockText = findViewById<TextView>(R.id.watchlock_active_text)
-        val activateButton = findViewById<MaterialButton>(R.id.activate_button)
-
-        val isActive =
-            getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE).getBoolean(
-                "isActive",
-                false
-            )
-
-        if (isActive && devicePolicyManager.isAdminActive(adminComponent)) {
-            watchLockText.text = getString(R.string.watchlock_active)
-            watchLockText.setTextColor(getColor(R.color.success))
-
-            activateButton.text = getString(R.string.deactivate_watchlock)
-            activateButton.setBackgroundColor(getColor(R.color.purple_500))
-
-        } else {
-            watchLockText.text = getString(R.string.watchlock_inactive)
-            watchLockText.setTextColor(getColor(R.color.danger))
-
-            activateButton.text = getString(R.string.activate_watchlock)
-            activateButton.setBackgroundColor(getColor(R.color.purple_200))
-        }
-    }
-
-    private fun checkPing() {
-        val pingButton = findViewById<MaterialButton>(R.id.ping_button) ?: return
-        val pingText = findViewById<TextView>(R.id.ping_text) ?: return
-
-        when (pingStatus) {
-            PingStatus.SUCCESS -> {
-                pingButton.text = getString(R.string.ping)
-                pingButton.isEnabled = true
-                pingButton.setBackgroundColor(getColor(R.color.success))
-
-                pingText.visibility = TextView.VISIBLE
-                pingText.text = getString(R.string.ping_success)
-                pingText.setTextColor(getColor(R.color.success))
-            }
-
-            PingStatus.PENDING -> {
-                pingButton.text = getString(R.string.ping_pending)
-                pingButton.isEnabled = false
-                pingButton.setBackgroundColor(getColor(R.color.warning))
-
-                pingText.visibility = TextView.GONE
-            }
-
-            PingStatus.FAILED -> {
-                pingButton.text = getString(R.string.ping)
-                pingButton.isEnabled = true
-                pingButton.setBackgroundColor(getColor(R.color.danger))
-
-                pingText.visibility = TextView.VISIBLE
-                pingText.text = getString(R.string.ping_failed)
-                pingText.setTextColor(getColor(R.color.danger))
-            }
-
-            PingStatus.NONE -> {
-                pingButton.text = getString(R.string.ping)
-                pingButton.isEnabled = true
-                pingButton.setBackgroundColor(getColor(R.color.purple_200))
-
-                pingText.visibility = TextView.GONE
-            }
-        }
-    }
-
-    private fun setWatchLockActive(isActive: Boolean) {
-        val editor = getSharedPreferences(
-            PREFERENCE_FILE_KEY,
-            MODE_PRIVATE
-        ).edit()
-        editor.putBoolean("isActive", isActive).apply()
-    }
-
-    private fun showRequestAdminDialog() {
-        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-        val explanation = getString(R.string.admin_explanation)
-        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
-        intent.putExtra(
-            DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-            explanation
-        )
-        resultLauncher.launch(intent)
-    }
-
-    private var resultLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val statusText = findViewById<TextView>(R.id.admin_text)
-                statusText.text = getString(R.string.admin_active)
-                statusText.setTextColor(getColor(R.color.success))
-                setWatchLockActive(true)
-            }
-        }
 }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun DefaultPreview() {
+    WatchLockTheme(darkTheme = true) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset(y = (-32).dp)
+                    .background(MaterialTheme.colorScheme.background),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                CheckList(true, PingStatus.SUCCESS, adminActive = true, watchLockEnabled = true)
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+
+                ) {
+                    Button(onClick = {}) {
+                        Text("Activate WatchLock")
+                    }
+                    PingButton(PingStatus.FAILED) {
+
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PingButton(pingStatus: PingStatus, onClick: () -> Unit) {
+    val buttonText = when (pingStatus) {
+        PingStatus.SUCCESS -> "Ping Watch"
+        PingStatus.PENDING -> "Ping requested..."
+        PingStatus.FAILED -> "Ping Failed"
+        PingStatus.NONE -> "Ping Watch"
+    }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "Loading")
+    val angle by infiniteTransition.animateFloat(
+        initialValue = 0F,
+        targetValue = 360F,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing)
+        ),
+        label = "Loading Animation",
+    )
+
+    OutlinedButton(onClick) {
+        if (pingStatus == PingStatus.PENDING) {
+            Icon(
+                Icons.Default.Refresh,
+                contentDescription = "Ping",
+                modifier = Modifier.graphicsLayer {
+                    rotationZ = angle
+                })
+        }
+        Text(buttonText, modifier = Modifier.padding(start = 4.dp))
+    }
+}
+
+@Composable
+fun CheckList(
+    watchConnected: Boolean,
+    pingStatus: PingStatus,
+    adminActive: Boolean,
+    watchLockEnabled: Boolean
+) {
+    val checklist: ArrayList<CheckListItem> = ArrayList()
+
+    checklist.add(
+        when (watchConnected) {
+            true -> CheckListItem("Watch connected", true)
+            false -> CheckListItem("Watch connected", false)
+        }
+    )
+
+    if (pingStatus != PingStatus.NONE && pingStatus != PingStatus.PENDING) {
+        checklist.add(
+            when (pingStatus) {
+                PingStatus.SUCCESS -> CheckListItem("Ping successful", true)
+                PingStatus.FAILED -> CheckListItem("Ping failed", false)
+                else -> CheckListItem("Ping pending", false)
+            }
+        )
+    }
+
+    checklist.add(
+        when (adminActive) {
+            true -> CheckListItem("Admin active", true)
+            false -> CheckListItem("Admin active", false)
+        }
+    )
+
+    checklist.add(
+        when (watchLockEnabled) {
+            true -> CheckListItem("WatchLock enabled", true)
+            false -> CheckListItem("WatchLock enabled", false)
+        }
+    )
+
+    checklist.sortBy { !it.success }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        contentPadding = PaddingValues(32.dp),
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(checklist.size) { index ->
+            val item = checklist[index]
+            ChecklistItem(item.text, item.success)
+        }
+
+        item {
+            if (checklist.all { it.success } && pingStatus == PingStatus.SUCCESS) {
+                Text(
+                    text = "Ready and active", modifier = Modifier.offset(y = (-8).dp),
+                    fontSize = 12.sp,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ChecklistItem(text: String, success: Boolean) {
+    Card(
+        modifier = Modifier
+            .shadow(4.dp)
+            .fillMaxWidth(),
+        border = BorderStroke(
+            1.dp,
+            if (success) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (success) {
+                Icon(
+                    Icons.Default.Check,
+                    contentDescription = "Success",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            } else {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Failed",
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
+            Text(
+                text = text,
+                modifier = Modifier.padding(start = 8.dp),
+                fontSize = 18.sp,
+
+                color = if (success) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+            )
+        }
+    }
+
+}
+
+private fun isAdminActive(context: Context): Boolean {
+    val devicePolicyManager =
+        context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val adminComponent = ComponentName(context, AdminReceiver::class.java)
+
+    return devicePolicyManager.isAdminActive(adminComponent)
+}
+
+private fun showRequestAdminDialog(context: Context) {
+    val adminComponent = ComponentName(context, AdminReceiver::class.java)
+    val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+    val explanation = context.getString(R.string.admin_explanation)
+
+    intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
+    intent.putExtra(
+        DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+        explanation
+    )
+
+    context.startActivity(intent)
+}
+

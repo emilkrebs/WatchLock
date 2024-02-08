@@ -124,7 +124,7 @@ fun NotConnected(onRetry: () -> Unit = {}) {
         ) {
             Text(
                 text = stringResource(R.string.no_phone_connected),
-                color = MaterialTheme.colors.onBackground,
+                color = MaterialTheme.colors.onPrimary,
                 fontSize = 16.sp
             )
             Spacer(modifier = Modifier.height(18.dp))
@@ -207,24 +207,14 @@ fun StatusIcon(lockStatus: LockStatus) {
 
 @Composable
 fun StatusText(lockStatus: LockStatus) {
-    return when (lockStatus) {
-        LockStatus.LOCKED -> Text(
-            text = stringResource(R.string.phone_locked),
-            color = MaterialTheme.colors.onBackground,
-            fontSize = 16.sp
-        )
-
-        LockStatus.UNLOCKED -> Text(
-            text = stringResource(R.string.phone_unlocked),
-            color = MaterialTheme.colors.onBackground,
-            fontSize = 16.sp
-        )
-
-        LockStatus.UNKNOWN -> Text(
-            text = stringResource(R.string.loading),
-            color = MaterialTheme.colors.onBackground,
-            fontSize = 16.sp
-        )
-    }
+    Text(
+        text = when (lockStatus) {
+            LockStatus.LOCKED -> stringResource(R.string.phone_locked)
+            LockStatus.UNLOCKED -> stringResource(R.string.phone_unlocked)
+            LockStatus.UNKNOWN -> stringResource(R.string.loading)
+        },
+        color = MaterialTheme.colors.onBackground,
+        fontSize = 16.sp
+    )
 }
 
