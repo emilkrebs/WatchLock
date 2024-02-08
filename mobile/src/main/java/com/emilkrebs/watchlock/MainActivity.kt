@@ -54,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -119,7 +120,7 @@ fun MobileApp(context: Context) {
             ).getBoolean("isActive", false)
         )
     }
-    var mainButtonText by remember { mutableStateOf("Activate WatchLock") }
+    var mainButtonText by remember { mutableStateOf(context.getString(R.string.activate_watchlock)) }
 
     val pingTimeoutRunnable = Runnable {
         if (pingStatus == PingStatus.PENDING) {
@@ -128,9 +129,9 @@ fun MobileApp(context: Context) {
     }
 
     mainButtonText =
-        if (watchLockEnabled) "Deactivate WatchLock"
-        else if (!adminActive) "Activate WatchLock (Admin required)"
-        else "Activate WatchLock"
+        if (watchLockEnabled) stringResource(R.string.deactivate_watchlock)
+        else if (!adminActive)stringResource(R.string.activate_watchlock_admin)
+        else stringResource(R.string.activate_watchlock)
 
 
     LaunchedEffect(Unit) {
@@ -202,8 +203,7 @@ fun MobileApp(context: Context) {
                             context.getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE).edit()
                                 .putBoolean("isActive", watchLockEnabled).apply()
 
-                            mainButtonText =
-                                if (watchLockEnabled) "Deactivate WatchLock" else "Activate WatchLock"
+                            mainButtonText = if (watchLockEnabled) context.getString(R.string.deactivate_watchlock) else context.getString(R.string.activate_watchlock)
                         },
 
                         ) {
@@ -309,32 +309,32 @@ fun CheckList(
 
     checklist.add(
         when (watchConnected) {
-            true -> CheckListItem("Watch connected", true)
-            false -> CheckListItem("Watch connected", false)
+            true -> CheckListItem(stringResource(R.string.watch_connected), true)
+            false -> CheckListItem(stringResource(R.string.no_watch_connected), false)
         }
     )
 
     if (pingStatus != PingStatus.NONE && pingStatus != PingStatus.PENDING) {
         checklist.add(
             when (pingStatus) {
-                PingStatus.SUCCESS -> CheckListItem("Ping successful", true)
-                PingStatus.FAILED -> CheckListItem("Ping failed", false)
-                else -> CheckListItem("Ping pending", false)
+                PingStatus.SUCCESS -> CheckListItem(stringResource(R.string.ping_success), true)
+                PingStatus.FAILED -> CheckListItem(stringResource(R.string.ping_failed), false)
+                else -> CheckListItem(stringResource(R.string.ping_pending), false)
             }
         )
     }
 
     checklist.add(
         when (adminActive) {
-            true -> CheckListItem("Admin active", true)
-            false -> CheckListItem("Admin active", false)
+            true -> CheckListItem(stringResource(R.string.admin_active), true)
+            false -> CheckListItem(stringResource(R.string.admin_inactive), false)
         }
     )
 
     checklist.add(
         when (watchLockEnabled) {
-            true -> CheckListItem("WatchLock enabled", true)
-            false -> CheckListItem("WatchLock enabled", false)
+            true -> CheckListItem(stringResource(R.string.watchlock_active), true)
+            false -> CheckListItem(stringResource(R.string.watchlock_inactive), false)
         }
     )
 
@@ -356,7 +356,7 @@ fun CheckList(
         item {
             if (checklist.all { it.success } && pingStatus == PingStatus.SUCCESS) {
                 Text(
-                    text = "Ready and active", modifier = Modifier.offset(y = (-8).dp),
+                    text = stringResource(R.string.ready_and_active), modifier = Modifier.offset(y = (-8).dp),
                     fontSize = 12.sp,
                 )
             }

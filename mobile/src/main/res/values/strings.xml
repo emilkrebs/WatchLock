@@ -1,26 +1,28 @@
 <resources>
     <string name="app_name" translatable="false">WatchLock</string>
 
-    <string name="checklist_title">Dashboard</string>
     <string name="admin_explanation">WatchLock needs admin rights to lock the screen and to run in the background.</string>
 
     <!-- Checklist -->
-    <string name="admin_active">✓ Admin Active</string>
-    <string name="admin_inactive">✗ Admin Inactive</string>
+    <string name="admin_active">Admin Active</string>
+    <string name="admin_inactive">Admin Inactive</string>
 
-    <string name="watch_connected">✓ Watch Connected</string>
-    <string name="no_watch_connected">✗ No Watch Connected</string>
+    <string name="watch_connected">Watch Connected</string>
+    <string name="no_watch_connected">No Watch Connected</string>
 
-    <string name="watchlock_active">✓ WatchLock Active</string>
-    <string name="watchlock_inactive">✗ WatchLock Inactive</string>
+    <string name="watchlock_active">WatchLock Active</string>
+    <string name="watchlock_inactive">WatchLock Inactive</string>
 
-    <string name="ping_success">✓ Ping Success</string>
-    <string name="ping_failed">✗ Ping Failed</string>
+    <string name="ping_success">Ping Success</string>
+    <string name="ping_failed">Ping Failed</string>
+
+    <string name="ready_and_active">Ready and Active</string>
 
     <!-- Buttons -->
     <string name="activate_watchlock">Activate WatchLock</string>
+    <string name="activate_watchlock_admin">Activate WatchLock (Admin required)</string>
     <string name="deactivate_watchlock">Deactivate WatchLock</string>
 
-    <string name="ping">Ping</string>
-    <string name="ping_pending">Pinging…</string>
+    <string name="ping">Ping Watch</string>
+    <string name="ping_pending">Ping requested…</string>
 </resources>
