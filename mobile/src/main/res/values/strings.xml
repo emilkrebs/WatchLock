@@ -19,10 +19,10 @@
     <string name="ready_and_active">Ready and Active</string>
 
     <!-- Buttons -->
-    <string name="activate_watchlock">Activate WatchLock</string>
-    <string name="activate_watchlock_admin">Activate WatchLock (Admin required)</string>
-    <string name="deactivate_watchlock">Deactivate WatchLock</string>
+    <string name="activate_watchlock">Activate</string>
+    <string name="deactivate_watchlock">Deactivate</string>
 
     <string name="ping">Ping Watch</string>
     <string name="ping_pending">Ping requested…</string>
+    <string name="ping_already_pending">Ping already requested…</string>
 </resources>

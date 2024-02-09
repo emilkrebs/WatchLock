@@ -17,10 +17,10 @@
 
     <string name="ready_and_active">Bereit und aktiv</string>
 
-    <string name="activate_watchlock">WatchLock aktivieren</string>
-    <string name="activate_watchlock_admin">WatchLock aktivieren (Admin erforderlich)</string>
-    <string name="deactivate_watchlock">WatchLock deaktivieren</string>
+    <string name="activate_watchlock">Aktivieren</string>
+    <string name="deactivate_watchlock">Deaktivieren</string>
 
     <string name="ping">SmartWatch pingen</string>
     <string name="ping_pending">Ping angefordert…</string>
+    <string name="ping_already_pending">Ping wurde bereits angefordert…</string>
 </resources>
