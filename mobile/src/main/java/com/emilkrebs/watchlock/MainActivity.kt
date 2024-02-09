@@ -219,7 +219,7 @@ fun MobileApp(context: Context = LocalContext.current) {
                         onClick = {
                             watchLockEnabled = if (!adminActive) {
                                 showRequestAdminDialog(context)
-                                true
+                                false
                             } else {
                                 !watchLockEnabled
                             }
