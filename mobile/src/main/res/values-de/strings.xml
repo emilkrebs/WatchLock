@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">WatchLock</string>
 
-    <string name="admin_explanation">WatchLock benötigt Administratorrechte, um den Bildschirm zu sperren und im Hintergrund ausgeführt zu werden.</string>
+    <string name="admin_explanation">WatchLock benötigt Administratorrechte, um den Bildschirm zu sperren.</string>
 
     <string name="admin_active">Admin aktiv</string>
     <string name="admin_inactive">Admin inaktiv</string>

@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">WatchLock</string>
 
-    <string name="admin_explanation">WatchLock needs admin rights to lock the screen and to run in the background.</string>
+    <string name="admin_explanation">WatchLock requires the device administrator permission to lock the screen.</string>
 
     <!-- Checklist -->
     <string name="admin_active">Admin Active</string>
