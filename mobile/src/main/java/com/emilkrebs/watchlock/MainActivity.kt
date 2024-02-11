@@ -63,6 +63,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -129,6 +130,8 @@ fun OnLifecycleEvent(onEvent: (owner: LifecycleOwner, event: Lifecycle.Event) ->
 
 @Composable
 fun MobileApp(context: Context) {
+    val isPreview = LocalInspectionMode.current
+
     var pingStatus by remember { mutableStateOf(PingStatus.NONE) }
     var watchConnected by remember { mutableStateOf(false) }
     var adminActive by remember { mutableStateOf(false) }
@@ -186,10 +189,12 @@ fun MobileApp(context: Context) {
     OnLifecycleEvent { _, event ->
         when (event) {
             Lifecycle.Event.ON_RESUME -> {
-                WatchCommunicationService.isWatchConnected(context) { connected ->
-                    watchConnected = connected
+                if (!isPreview) {
+                    WatchCommunicationService.isWatchConnected(context) { connected ->
+                        watchConnected = connected
+                    }
+                    adminActive = isAdminActive(context)
                 }
-                adminActive = isAdminActive(context)
             }
 
             else -> {}
@@ -376,7 +381,7 @@ fun CheckList(
                         text = stringResource(R.string.ready_and_active_explanation),
                         modifier = Modifier.offset(y = (-8).dp),
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 // ready and inactive
                 !watchLockEnabled ->
@@ -386,6 +391,7 @@ fun CheckList(
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.error
                     )
+
                 else ->
                     Text(
                         text = stringResource(R.string.not_ready_explanation),
@@ -444,19 +450,19 @@ fun ChecklistItem(text: String, success: Boolean) {
 
 
 private fun isAdminActive(context: Context): Boolean {
-    try {
+    return try {
         val devicePolicyManager =
             context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val adminComponent = ComponentName(context, AdminReceiver::class.java)
 
-        return devicePolicyManager.isAdminActive(adminComponent)
+        devicePolicyManager.isAdminActive(adminComponent)
     } catch (e: Exception) {
         Toast.makeText(
             context,
             "There was an error checking the admin status. Please try again.",
             Toast.LENGTH_SHORT
         ).show()
-        return false
+        false
     }
 }
 
