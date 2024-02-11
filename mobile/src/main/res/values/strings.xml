@@ -27,7 +27,9 @@
     <string name="activate_watchlock">Activate</string>
     <string name="deactivate_watchlock">Deactivate</string>
 
-    <string name="ping">Ping Watch</string>
+    <string name="ping_watch">Ping Watch</string>
     <string name="ping_pending">Ping requested…</string>
     <string name="ping_already_pending">Ping already requested…</string>
+
+    <string name="admin_status_error">There was an error checking the admin status. Please try again.</string>
 </resources>

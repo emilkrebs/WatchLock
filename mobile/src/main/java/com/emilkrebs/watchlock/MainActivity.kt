@@ -285,10 +285,10 @@ fun MainButton(adminActive: Boolean, watchLockEnabled: Boolean, onClick: () -> U
 @Composable
 fun PingButton(pingStatus: PingStatus, onClick: () -> Unit) {
     val buttonText = when (pingStatus) {
-        PingStatus.SUCCESS -> "Ping Watch"
-        PingStatus.PENDING -> "Ping requested..."
-        PingStatus.FAILED -> "Ping Watch"
-        PingStatus.NONE -> "Ping Watch"
+        PingStatus.SUCCESS -> stringResource(R.string.ping_watch)
+        PingStatus.PENDING -> stringResource(R.string.ping_pending)
+        PingStatus.FAILED -> stringResource(R.string.ping_watch)
+        PingStatus.NONE -> stringResource(R.string.ping_watch)
     }
 
     val infiniteTransition = rememberInfiniteTransition(label = "Loading")
@@ -459,7 +459,7 @@ private fun isAdminActive(context: Context): Boolean {
     } catch (e: Exception) {
         Toast.makeText(
             context,
-            "There was an error checking the admin status. Please try again.",
+            context.getString(R.string.admin_status_error),
             Toast.LENGTH_SHORT
         ).show()
         false
