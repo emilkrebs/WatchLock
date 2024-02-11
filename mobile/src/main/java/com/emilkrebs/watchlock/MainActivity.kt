@@ -102,7 +102,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Application", showBackground = true, showSystemUi = true)
 @Composable
 fun MobileAppPreview() {
     WatchLockTheme {
