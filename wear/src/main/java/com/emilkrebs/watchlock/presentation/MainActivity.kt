@@ -145,9 +145,10 @@ fun NotConnected(onRetry: () -> Unit = {}) {
 @Composable
 fun StatusView(context: Context) {
     var lockStatus by remember { mutableStateOf(LockStatus.UNKNOWN) }
-    var isLoading by remember { mutableStateOf(false) }
+    var isLoading = false
+    val phoneCommunicationService = PhoneCommunicationService(context)
 
-    PhoneCommunicationService(context).onLockStatusReceived = {
+    phoneCommunicationService.onLockStatusReceived = {
         lockStatus = it
         isLoading = false
     }
@@ -157,7 +158,8 @@ fun StatusView(context: Context) {
         while (true) {
             if(!isLoading) {
                 isLoading = true
-                PhoneCommunicationService(context).requestLockStatus()
+                phoneCommunicationService.requestLockStatus()
+                lockStatus = LockStatus.UNKNOWN
             }
             delay(500)
         }

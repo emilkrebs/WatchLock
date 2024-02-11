@@ -15,7 +15,11 @@
     <string name="ping_success">Ping erfolgreich</string>
     <string name="ping_failed">Ping fehlgeschlagen</string>
 
-    <string name="ready_and_active">Bereit und aktiv</string>
+    <!-- Checklist explanations -->
+    <string name="ready_and_active_explanation">Bereit und aktiv</string>
+    <string name="ready_and_inactive_explanation">Bereit und inaktiv</string>
+
+    <string name="not_ready_explanation">Nicht bereit</string>
 
     <string name="activate_watchlock">Aktivieren</string>
     <string name="deactivate_watchlock">Deaktivieren</string>

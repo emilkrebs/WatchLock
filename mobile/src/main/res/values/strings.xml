@@ -16,7 +16,12 @@
     <string name="ping_success">Ping Success</string>
     <string name="ping_failed">Ping Failed</string>
 
-    <string name="ready_and_active">Ready and Active</string>
+    <!-- Checklist explanations -->
+    <string name="ready_and_active_explanation">Ready and Active</string>
+    <string name="ready_and_inactive_explanation">Ready and Inactive</string>
+
+    <string name="not_ready_explanation">Not Ready</string>
+
 
     <!-- Buttons -->
     <string name="activate_watchlock">Activate</string>

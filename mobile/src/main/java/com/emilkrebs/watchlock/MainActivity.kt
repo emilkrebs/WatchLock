@@ -1,5 +1,6 @@
 package com.emilkrebs.watchlock
 
+import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -12,7 +13,9 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -62,6 +65,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -90,8 +94,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            MobileApp(this)
+            WatchLockTheme(darkTheme = true) {
+                MobileApp(this)
+            }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MobileAppPreview() {
+    WatchLockTheme {
+        MobileApp(LocalContext.current)
     }
 }
 
@@ -114,12 +128,22 @@ fun OnLifecycleEvent(onEvent: (owner: LifecycleOwner, event: Lifecycle.Event) ->
 }
 
 @Composable
-fun MobileApp(context: Context = LocalContext.current) {
+fun MobileApp(context: Context) {
     var pingStatus by remember { mutableStateOf(PingStatus.NONE) }
     var watchConnected by remember { mutableStateOf(false) }
     var adminActive by remember { mutableStateOf(false) }
     var watchLockEnabled by remember { mutableStateOf(isWatchLockEnabled(context)) }
     var mainButtonText by remember { mutableStateOf(context.getString(R.string.activate_watchlock)) }
+
+    val adminDialogLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // If the result is OK, increment the refresh state to trigger a re-render
+                adminActive = isAdminActive(context)
+                watchLockEnabled = true
+                setWatchLockEnabled(context, watchLockEnabled)
+            }
+        }
 
     val pingTimeoutRunnable = Runnable {
         if (pingStatus == PingStatus.PENDING) {
@@ -162,6 +186,9 @@ fun MobileApp(context: Context = LocalContext.current) {
     OnLifecycleEvent { _, event ->
         when (event) {
             Lifecycle.Event.ON_RESUME -> {
+                WatchCommunicationService.isWatchConnected(context) { connected ->
+                    watchConnected = connected
+                }
                 adminActive = isAdminActive(context)
             }
 
@@ -170,76 +197,58 @@ fun MobileApp(context: Context = LocalContext.current) {
     }
 
     val listColors = listOf(Color.Yellow, Color.Red, Color.Blue)
-
-    WatchLockTheme(darkTheme = true) {
-        Surface(
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.horizontalGradient(
+                    listColors,
+                    tileMode = TileMode.Clamp
+                )
+            ),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.horizontalGradient(
-                        listColors,
-                        tileMode = TileMode.Clamp
-                    )
-                ),
-            color = MaterialTheme.colorScheme.background
-
+                .offset(y = (-32).dp)
+                .background(MaterialTheme.colorScheme.background),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            CheckList(watchConnected, pingStatus, adminActive, watchLockEnabled)
+
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .offset(y = (-32).dp)
-                    .background(MaterialTheme.colorScheme.background),
+                    .width(IntrinsicSize.Max)
+                    .wrapContentHeight(),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                CheckList(watchConnected, pingStatus, adminActive, watchLockEnabled)
-
-                Column(
-                    modifier = Modifier
-                        .width(IntrinsicSize.Max)
-                        .wrapContentHeight(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                Button(
-                        onClick = {
-                            watchLockEnabled = if (!adminActive) {
-                                showRequestAdminDialog(context)
-                                false
-                            } else {
-                                !watchLockEnabled
-                            }
-                            context.getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE).edit()
-                                .putBoolean("isActive", watchLockEnabled).apply()
-
-                            mainButtonText =
-                                if (watchLockEnabled) context.getString(R.string.deactivate_watchlock) else context.getString(
-                                    R.string.activate_watchlock
-                                )
-                        },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-
-                        ) {
-                        Text(
-                            mainButtonText,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
+                MainButton(adminActive, watchLockEnabled) {
+                    if (!adminActive) {
+                        adminDialogLauncher.launch(getAdminDialogIntent(context))
+                    } else {
+                        watchLockEnabled = !watchLockEnabled
+                        setWatchLockEnabled(context, watchLockEnabled)
                     }
-                    PingButton(pingStatus) {
-                        if(pingStatus == PingStatus.PENDING) {
-                            Toast.makeText(context, context.getString(R.string.ping_already_pending), Toast.LENGTH_SHORT).show()
-                            return@PingButton
-                        }
-                        pingStatus = try {
-                            WatchCommunicationService(context).pingWatch()
-                            Handler(Looper.getMainLooper()).postDelayed(pingTimeoutRunnable, 8000)
-                            PingStatus.PENDING
-                        } catch (e: Exception) {
-                            PingStatus.FAILED
-                        }
+                }
+
+                PingButton(pingStatus) {
+                    if (pingStatus == PingStatus.PENDING) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.ping_already_pending),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@PingButton
+                    }
+                    pingStatus = try {
+                        WatchCommunicationService(context).pingWatch()
+                        Handler(Looper.getMainLooper()).postDelayed(pingTimeoutRunnable, 8000)
+                        PingStatus.PENDING
+                    } catch (e: Exception) {
+                        PingStatus.FAILED
                     }
                 }
             }
@@ -247,6 +256,26 @@ fun MobileApp(context: Context = LocalContext.current) {
     }
 }
 
+@Composable
+fun MainButton(adminActive: Boolean, watchLockEnabled: Boolean, onClick: () -> Unit) {
+    val mainButtonText =
+        if (!adminActive) stringResource(R.string.activate_watchlock)
+        else if (watchLockEnabled) stringResource(R.string.deactivate_watchlock)
+        else stringResource(R.string.activate_watchlock)
+
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp),
+    ) {
+        Text(
+            mainButtonText,
+            color = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.padding(start = 4.dp)
+        )
+    }
+}
 
 @Composable
 fun PingButton(pingStatus: PingStatus, onClick: () -> Unit) {
@@ -341,13 +370,31 @@ fun CheckList(
         }
 
         item {
-            if (checklist.all { it.success } && pingStatus == PingStatus.SUCCESS) {
-                Text(
-                    text = stringResource(R.string.ready_and_active),
-                    modifier = Modifier.offset(y = (-8).dp),
-                    fontSize = 12.sp,
-                )
+            when {
+                checklist.all { it.success } ->
+                    Text(
+                        text = stringResource(R.string.ready_and_active_explanation),
+                        modifier = Modifier.offset(y = (-8).dp),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                // ready and inactive
+                !watchLockEnabled ->
+                    Text(
+                        text = stringResource(R.string.ready_and_inactive_explanation),
+                        modifier = Modifier.offset(y = (-8).dp),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                else ->
+                    Text(
+                        text = stringResource(R.string.not_ready_explanation),
+                        modifier = Modifier.offset(y = (-8).dp),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.error
+                    )
             }
+
         }
     }
 }
@@ -397,11 +444,20 @@ fun ChecklistItem(text: String, success: Boolean) {
 
 
 private fun isAdminActive(context: Context): Boolean {
-    val devicePolicyManager =
-        context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val adminComponent = ComponentName(context, AdminReceiver::class.java)
+    try {
+        val devicePolicyManager =
+            context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val adminComponent = ComponentName(context, AdminReceiver::class.java)
 
-    return devicePolicyManager.isAdminActive(adminComponent)
+        return devicePolicyManager.isAdminActive(adminComponent)
+    } catch (e: Exception) {
+        Toast.makeText(
+            context,
+            "There was an error checking the admin status. Please try again.",
+            Toast.LENGTH_SHORT
+        ).show()
+        return false
+    }
 }
 
 private fun isWatchLockEnabled(context: Context): Boolean {
@@ -409,17 +465,20 @@ private fun isWatchLockEnabled(context: Context): Boolean {
         .getBoolean("isActive", false)
 }
 
-private fun showRequestAdminDialog(context: Context) {
+private fun setWatchLockEnabled(context: Context, enabled: Boolean) {
+    context.getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE)
+        .edit()
+        .putBoolean("isActive", enabled)
+        .apply()
+}
+
+private fun getAdminDialogIntent(context: Context): Intent {
     val adminComponent = ComponentName(context, AdminReceiver::class.java)
     val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
     val explanation = context.getString(R.string.admin_explanation)
 
     intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
-    intent.putExtra(
-        DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-        explanation
-    )
+    intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, explanation)
 
-    context.startActivity(intent)
+    return intent
 }
-

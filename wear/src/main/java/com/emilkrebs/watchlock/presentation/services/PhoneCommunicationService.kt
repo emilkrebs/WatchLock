@@ -136,6 +136,7 @@ enum class LockStatus(val value: Int) {
 
 }
 
+
 /**
  * A message object
  * @param path the path of the message
