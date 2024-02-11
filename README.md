@@ -19,7 +19,7 @@
 - Lock your phone from your Watch
 - View the if the phone is locked from your watch
 - Dashboard on the mobile application to check if everything is working
-- Support of dynamic colors
+- Support of dynamic colors (the application adapts the colors of the operating system)
 
 Languages: English, German
 
