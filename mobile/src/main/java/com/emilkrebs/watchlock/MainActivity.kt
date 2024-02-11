@@ -93,9 +93,8 @@ val pingFilter = IntentFilter("com.emilkrebs.watchlock.PING")
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
-            WatchLockTheme(darkTheme = true) {
+            WatchLockTheme {
                 MobileApp(this)
             }
         }
@@ -105,7 +104,7 @@ class MainActivity : ComponentActivity() {
 @Preview(name = "Application", showBackground = true, showSystemUi = true)
 @Composable
 fun MobileAppPreview() {
-    WatchLockTheme {
+    WatchLockTheme() {
         MobileApp(LocalContext.current)
     }
 }
