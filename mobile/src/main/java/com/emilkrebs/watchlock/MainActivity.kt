@@ -28,25 +28,34 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -66,9 +75,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -102,10 +118,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Application", showBackground = true, showSystemUi = true)
 @Composable
 fun MobileAppPreview() {
-    WatchLockTheme {
+    WatchLockTheme(darkTheme = true)  {
         MobileApp(LocalContext.current)
     }
 }
@@ -144,7 +160,7 @@ fun MobileApp(context: Context) {
                 // If the result is OK, increment the refresh state to trigger a re-render
                 adminActive = isAdminActive(context)
                 watchLockEnabled = true
-                setWatchLockEnabled(context, watchLockEnabled)
+                setWatchLockEnabled(context, true)
             }
         }
 
@@ -213,6 +229,7 @@ fun MobileApp(context: Context) {
             ),
         color = MaterialTheme.colorScheme.background
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -221,6 +238,17 @@ fun MobileApp(context: Context) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(y = (-64).dp)
+                    .padding(32.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                HelpButton()
+            }
+
             CheckList(watchConnected, pingStatus, adminActive, watchLockEnabled)
 
             Column(
@@ -369,6 +397,9 @@ fun CheckList(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        item {
+
+        }
         items(checklist.size) { index ->
             val item = checklist[index]
             ChecklistItem(item.text, item.success)
@@ -404,6 +435,92 @@ fun CheckList(
         }
     }
 }
+
+@Composable
+@Preview
+fun HelpButton() {
+    var showDialog by remember { mutableStateOf(false) }
+
+    if(showDialog) {
+        HelpDialog {
+            showDialog = false
+        }
+    }
+
+    FloatingActionButton(
+        onClick = {
+            showDialog = true
+        },
+        containerColor = MaterialTheme.colorScheme.secondary,
+        shape = CircleShape,
+        modifier = Modifier
+            .size(32.dp),
+    ) {
+        Text(
+            text = "?",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = 18.sp
+        )
+    }
+}
+
+
+@Composable
+@Preview
+fun HelpDialog(onDismissRequest: () -> Unit = {}) {
+    Dialog(
+        onDismissRequest = { onDismissRequest() }
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            // title
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Info,
+                    modifier = Modifier.size(18.dp),
+                    contentDescription = "Info",
+                )
+                Text(
+                    text = "Help",
+                    modifier = Modifier.padding(start = 4.dp),
+                    fontSize = 18.sp
+                )
+            }
+
+            Text(
+                text = "WatchLock requires administrator permissions to lock lock the phone.\n\nUse the ping button to check the connection to the watch.",
+                style = LocalTextStyle.current.merge(
+                    TextStyle(
+                        platformStyle = PlatformTextStyle(
+                            includeFontPadding = false
+                        ),
+                        lineHeightStyle = LineHeightStyle(
+                            alignment = LineHeightStyle.Alignment.Center,
+                            trim = LineHeightStyle.Trim.None
+                        )
+                    )
+                ),
+
+                modifier = Modifier
+                    .padding(12.dp)
+                    .wrapContentSize(),
+                textAlign = TextAlign.Start,
+            )
+        }
+    }
+}
+
 
 @Composable
 fun ChecklistItem(text: String, success: Boolean) {
