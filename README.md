@@ -12,7 +12,6 @@
 [![GitHub Latest Release)](https://img.shields.io/github/v/release/emilkrebs/WatchLock?logo=github)](https://github.com/emilkrebs/WatchLock/releases/latest)
 
 </div>
-
 <hr>
 
 ## Features
@@ -20,8 +19,13 @@
 - Lock your phone from your Watch
 - View the if the phone is locked from your watch
 - Dashboard on the mobile application to check if everything is working
+- Support of dynamic colors
 
 Languages: English, German
+
+---
+
+![Banner](https://github.com/emilkrebs/WatchLock/assets/68400102/1435b089-955e-4b2b-a405-778caba8b72d)
 
 # How to Install WatchLock on Android
 1. Download the latest version of WatchLock on your phone from the [releases page](https://github.com/emilkrebs/WatchLock/releases/latest).
@@ -70,7 +74,7 @@ You may get a security warning when installing the app. This is because the app 
 
 Mobile
 
-<img width="512" alt="WearOS" src="./images/watchlock_mobile.jpg">
+![Banner](https://github.com/emilkrebs/WatchLock/assets/68400102/1435b089-955e-4b2b-a405-778caba8b72d)
 
 WearOS
 
