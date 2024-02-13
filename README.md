@@ -31,7 +31,7 @@ Languages: English, German
 1. Download the latest version of WatchLock on your phone from the [releases page](https://github.com/emilkrebs/WatchLock/releases/latest).
 3. Open the apk-file and tap install.
    
-You may get a security warning when installing the app. This is because the app is not signed by Google. You can safely ignore this warning by tapping "install anyway".
+You may get a security warning when installing the app. This is because the app is not signed by Google. You can safely ignore this warning by tapping "Install anyway".
 
  <img width="256" alt="Security Warning" src="./images/security_warning.jpg">
 
