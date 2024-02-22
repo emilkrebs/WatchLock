@@ -80,6 +80,6 @@ dependencies {
 
 
     debugImplementation("androidx.compose.ui:ui-tooling:1.6.1")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.6.1")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.6.2")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
