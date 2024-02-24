@@ -23,6 +23,8 @@
 
 Languages: English, German
 
+**Tipp: Bind double-tapping the home button opens the application.**
+
 ---
 
 ![Banner](https://github.com/emilkrebs/WatchLock/assets/68400102/1435b089-955e-4b2b-a405-778caba8b72d)
