@@ -9,10 +9,10 @@ android {
 
     defaultConfig {
         applicationId = "com.emilkrebs.watchlock"
-        minSdk = 28
+        minSdk = 30
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.2.0"
 
         vectorDrawables {
             useSupportLibrary = true
@@ -78,4 +78,5 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
 }

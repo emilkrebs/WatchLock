@@ -8,8 +8,11 @@ import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 
 
-class PhoneListenerService : WearableListenerService() {
+class PhoneListenerService : WearableListenerService(){
+
     override fun onMessageReceived(messageEvent: MessageEvent) {
+        super.onMessageReceived(messageEvent)
+
         val intent = Intent()
         val path = messageEvent.path
         intent.action = ACTION_SEND
@@ -17,21 +20,45 @@ class PhoneListenerService : WearableListenerService() {
         intent.putExtra("path", path)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
 
-        if(path == PhoneCommunicationServiceDefaults.PING_PATH) {
+        if (path == PhoneCommunicationServiceDefaults.PING_PATH) {
             return handlePing(String(messageEvent.data))
-        }
-        else if (path == PhoneCommunicationServiceDefaults.COMMAND_PATH) {
+        } else if (path == PhoneCommunicationServiceDefaults.COMMAND_PATH) {
             return handleCommand(String(messageEvent.data))
         }
     }
 
+//    override fun onDataChanged(dataEvents: DataEventBuffer) {
+//        super.onDataChanged(dataEvents)
+//
+//        dataEvents.forEach { event ->
+//            // DataItem changed
+//            if (event.type == DataEvent.TYPE_CHANGED) {
+//                event.dataItem.also { item ->
+//                    if (item.uri.path?.compareTo("/lock_password") == 0) {
+//                        DataMapItem.fromDataItem(item).dataMap.apply {
+//                            val password =
+//                                this.getString("com.emilkrebs.key.lock_password")
+//                            println(password)
+//
+//                        }
+//                    }
+//                }
+//            } else if (event.type == DataEvent.TYPE_DELETED) {
+//                // DataItem deleted
+//            }
+//        }
+//
+//    }
+//
+
     private fun handleCommand(data: String) {
-        if(data == "not_active") {
+        if (data == "not_active") {
             Toast.makeText(this, "Request blocked", Toast.LENGTH_SHORT).show()
         }
     }
+
     private fun handlePing(message: String) {
-        if(message == "ping") {
+        if (message == "ping") {
             return PhoneCommunicationService(this).sendMessage(
                 Message.fromString(
                     PhoneCommunicationServiceDefaults.PING_PATH,
@@ -39,8 +66,5 @@ class PhoneListenerService : WearableListenerService() {
                 )
             )
         }
-
     }
-
-
 }

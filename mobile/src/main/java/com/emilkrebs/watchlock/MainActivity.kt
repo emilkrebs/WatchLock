@@ -1,11 +1,8 @@
 package com.emilkrebs.watchlock
 
 import android.app.Activity
-import android.app.admin.DevicePolicyManager
 import android.content.BroadcastReceiver
-import android.content.ComponentName
 import android.content.Context
-import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
@@ -16,11 +13,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,7 +36,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -41,9 +44,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -74,32 +74,33 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.emilkrebs.watchlock.components.NavScreen
 import com.emilkrebs.watchlock.components.Navbar
-import com.emilkrebs.watchlock.receivers.AdminReceiver
 import com.emilkrebs.watchlock.services.ACTION_PING_BROADCAST
 import com.emilkrebs.watchlock.services.WatchCommunicationService
 import com.emilkrebs.watchlock.ui.theme.WatchLockTheme
+import com.emilkrebs.watchlock.utils.Preferences
+import com.emilkrebs.watchlock.utils.getAdminDialogIntent
+import com.emilkrebs.watchlock.utils.isAdminActive
 
 enum class PingStatus {
-    SUCCESS,
-    PENDING,
-    FAILED,
-    NONE
+    SUCCESS, PENDING, FAILED, NONE
 }
 
 data class CheckListItem(val text: String, val success: Boolean)
 
-const val PREFERENCE_FILE_KEY = "com.example.android.watchlock_preferences"
 val pingFilter = IntentFilter("com.emilkrebs.watchlock.PING")
-
+lateinit var preferences: Preferences
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        preferences = Preferences(this)
         setContent {
             WatchLockTheme {
                 MobileApp(this)
@@ -111,6 +112,7 @@ class MainActivity : ComponentActivity() {
 @Preview(name = "Application", showBackground = true, showSystemUi = true)
 @Composable
 fun MobileAppPreview() {
+    preferences = Preferences(LocalContext.current)
     WatchLockTheme(darkTheme = true) {
         MobileApp(LocalContext.current)
     }
@@ -120,14 +122,30 @@ fun MobileAppPreview() {
 fun MobileApp(context: Context) {
     val navController = rememberNavController()
 
-    WatchLockTheme {
+    val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+        slideInVertically(animationSpec = tween(200)) + fadeIn(animationSpec = tween(300))
+    }
 
-        NavHost(navController = navController, startDestination = "home") {
-            composable("home") {
-                HomeScreen(context, navController)
-            }
-            composable("settings") {
-                SettingsScreen(context, navController)
+    val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+        slideOutHorizontally(animationSpec = tween(200)) + fadeOut(animationSpec = tween(300))
+    }
+
+    WatchLockTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            NavHost(
+                navController = navController,
+                startDestination = "home",
+                enterTransition = enterTransition,
+                exitTransition = exitTransition
+            ) {
+                composable("home") {
+                    HomeScreen(context, navController)
+                }
+                composable("settings") {
+                    SettingsScreen(context, navController)
+                }
             }
         }
     }
@@ -140,8 +158,8 @@ fun HomeScreen(context: Context, navController: NavController) {
 
     var pingStatus by remember { mutableStateOf(PingStatus.NONE) }
     var watchConnected by remember { mutableStateOf(false) }
-    var adminActive by remember { mutableStateOf(false) }
-    var watchLockEnabled by remember { mutableStateOf(isWatchLockEnabled(context)) }
+    var adminActive by remember { mutableStateOf(isAdminActive(context)) }
+    var watchLockEnabled by remember { mutableStateOf(preferences.isWatchLockEnabled()) }
     var mainButtonText by remember { mutableStateOf(context.getString(R.string.activate_watchlock)) }
 
     val adminDialogLauncher =
@@ -149,8 +167,9 @@ fun HomeScreen(context: Context, navController: NavController) {
             if (result.resultCode == Activity.RESULT_OK) {
                 // If the result is OK, increment the refresh state to trigger a re-render
                 adminActive = isAdminActive(context)
-                watchLockEnabled = true
-                setWatchLockEnabled(context, true)
+                preferences.setWatchLockEnabled(true, context, onSuccess = {
+                    watchLockEnabled = true
+                })
             }
         }
 
@@ -160,10 +179,9 @@ fun HomeScreen(context: Context, navController: NavController) {
         }
     }
 
-    mainButtonText =
-        if (!adminActive) stringResource(R.string.activate_watchlock)
-        else if (watchLockEnabled) stringResource(R.string.deactivate_watchlock)
-        else stringResource(R.string.activate_watchlock)
+    mainButtonText = if (!adminActive) stringResource(R.string.activate_watchlock)
+    else if (watchLockEnabled) stringResource(R.string.deactivate_watchlock)
+    else stringResource(R.string.activate_watchlock)
 
 
     LaunchedEffect(Unit) {
@@ -189,8 +207,7 @@ fun HomeScreen(context: Context, navController: NavController) {
     }
 
     // register the ping receiver
-    LocalBroadcastManager.getInstance(context)
-        .registerReceiver(pingReceiver, pingFilter)
+    LocalBroadcastManager.getInstance(context).registerReceiver(pingReceiver, pingFilter)
 
     OnLifecycleEvent { _, event ->
         when (event) {
@@ -206,20 +223,14 @@ fun HomeScreen(context: Context, navController: NavController) {
             else -> {}
         }
     }
-
     Surface(
-        modifier = Modifier
-            .fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
     ) {
-
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
             Navbar(
-                title = "",
-                navController = navController,
-                currentScreen = NavScreen.Home
+                title = "", navController = navController, currentScreen = NavScreen.Home
             )
             Column(
                 modifier = Modifier
@@ -241,8 +252,9 @@ fun HomeScreen(context: Context, navController: NavController) {
                         if (!adminActive) {
                             adminDialogLauncher.launch(getAdminDialogIntent(context))
                         } else {
-                            watchLockEnabled = !watchLockEnabled
-                            setWatchLockEnabled(context, watchLockEnabled)
+                            preferences.setWatchLockEnabled(!watchLockEnabled, context, onSuccess = {
+                                watchLockEnabled = !watchLockEnabled
+                            })
                         }
                     }
 
@@ -266,16 +278,12 @@ fun HomeScreen(context: Context, navController: NavController) {
                 }
             }
         }
-
     }
 }
 
 @Composable
 fun CheckList(
-    watchConnected: Boolean,
-    pingStatus: PingStatus,
-    adminActive: Boolean,
-    watchLockEnabled: Boolean
+    watchConnected: Boolean, pingStatus: PingStatus, adminActive: Boolean, watchLockEnabled: Boolean
 ) {
     val checklist: ArrayList<CheckListItem> = ArrayList()
     checklist.add(
@@ -320,8 +328,7 @@ fun CheckList(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
-        item {
-        }
+        item {}
         items(checklist.size) { index ->
             val item = checklist[index]
             ChecklistItem(item.text, item.success)
@@ -334,26 +341,23 @@ fun CheckList(
                 verticalAlignment = Alignment.Top
             ) {
                 when {
-                    checklist.all { it.success } ->
-                        Text(
-                            text = stringResource(R.string.ready_and_active_explanation),
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                    checklist.all { it.success } -> Text(
+                        text = stringResource(R.string.ready_and_active_explanation),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
                     // ready and inactive
-                    !watchLockEnabled ->
-                        Text(
-                            text = stringResource(R.string.ready_and_inactive_explanation),
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.error
-                        )
+                    !watchLockEnabled -> Text(
+                        text = stringResource(R.string.ready_and_inactive_explanation),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.error
+                    )
 
-                    else ->
-                        Text(
-                            text = stringResource(R.string.not_ready_explanation),
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.error
-                        )
+                    else -> Text(
+                        text = stringResource(R.string.not_ready_explanation),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             }
 
@@ -394,9 +398,7 @@ fun ChecklistItem(text: String, success: Boolean) {
                 )
             }
             Text(
-                text = text,
-                modifier = Modifier.padding(start = 8.dp),
-                fontSize = 18.sp,
+                text = text, modifier = Modifier.padding(start = 8.dp), fontSize = 18.sp,
 
                 color = if (success) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
             )
@@ -405,13 +407,11 @@ fun ChecklistItem(text: String, success: Boolean) {
 }
 
 
-
 @Composable
 fun MainButton(adminActive: Boolean, watchLockEnabled: Boolean, onClick: () -> Unit) {
-    val mainButtonText =
-        if (!adminActive) stringResource(R.string.activate_watchlock)
-        else if (watchLockEnabled) stringResource(R.string.deactivate_watchlock)
-        else stringResource(R.string.activate_watchlock)
+    val mainButtonText = if (!adminActive) stringResource(R.string.activate_watchlock)
+    else if (watchLockEnabled) stringResource(R.string.deactivate_watchlock)
+    else stringResource(R.string.activate_watchlock)
 
     Button(
         onClick = onClick,
@@ -447,14 +447,12 @@ fun PingButton(pingStatus: PingStatus, onClick: () -> Unit) {
     )
 
     OutlinedButton(
-        onClick,
-        modifier = Modifier
+        onClick, modifier = Modifier
             .offset(y = 12.dp)
             .fillMaxWidth()
     ) {
         if (pingStatus == PingStatus.PENDING) {
-            Icon(
-                Icons.Default.Refresh,
+            Icon(Icons.Default.Refresh,
                 contentDescription = "Ping",
                 modifier = Modifier.graphicsLayer {
                     rotationZ = angle
@@ -480,33 +478,4 @@ fun OnLifecycleEvent(onEvent: (owner: LifecycleOwner, event: Lifecycle.Event) ->
             lifecycle.removeObserver(observer)
         }
     }
-}
-
-
-private fun isAdminActive(context: Context): Boolean {
-    return try {
-        val devicePolicyManager =
-            context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val adminComponent = ComponentName(context, AdminReceiver::class.java)
-
-        devicePolicyManager.isAdminActive(adminComponent)
-    } catch (e: Exception) {
-        Toast.makeText(
-            context,
-            context.getString(R.string.admin_status_error),
-            Toast.LENGTH_SHORT
-        ).show()
-        false
-    }
-}
-
-private fun getAdminDialogIntent(context: Context): Intent {
-    val adminComponent = ComponentName(context, AdminReceiver::class.java)
-    val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-    val explanation = context.getString(R.string.admin_explanation)
-
-    intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
-    intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, explanation)
-
-    return intent
 }

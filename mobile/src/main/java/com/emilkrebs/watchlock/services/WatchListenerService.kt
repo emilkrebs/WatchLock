@@ -1,10 +1,10 @@
 package com.emilkrebs.watchlock.services
 
 import android.app.KeyguardManager
-import android.app.admin.DevicePolicyManager
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.emilkrebs.watchlock.PREFERENCE_FILE_KEY
+import com.emilkrebs.watchlock.preferences
+import com.emilkrebs.watchlock.utils.lockPhoneDialog
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 import kotlinx.coroutines.SupervisorJob
@@ -34,15 +34,11 @@ class WatchListenerService : WearableListenerService() {
     }
 
     private fun handleCommand(command: String) {
-        val isActive =
-            getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE).getBoolean(
-                "isActive",
-                false
-            )
+        val isActive = preferences.isWatchLockEnabled()
 
         if (command == "lock_phone") {
             if (isActive && watchCommunicationService.isAdminActive()) {
-                lockPhone()
+                lockPhoneDialog(this)
             }
         }
     }
@@ -87,10 +83,6 @@ class WatchListenerService : WearableListenerService() {
 
     private fun isPhoneLocked(): Boolean {
         return (this.getSystemService(KEYGUARD_SERVICE) as KeyguardManager).isDeviceLocked
-    }
-
-    private fun lockPhone() {
-        (getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager).lockNow()
     }
 
 }
