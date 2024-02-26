@@ -17,7 +17,7 @@ class DistanceCheckerService : Service() {
             stopSelf()
         } else {
             val checkWatchNearbyRequest = PeriodicWorkRequest.Builder(
-                CheckWatchNearbyWorker::class.java, 15, TimeUnit.MINUTES
+                CheckWatchNearbyWorker::class.java, preferences.getLockNotNearbyInterval().toLong(), TimeUnit.MINUTES
             ).build()
             WorkManager.getInstance(applicationContext).enqueue(checkWatchNearbyRequest)
         }

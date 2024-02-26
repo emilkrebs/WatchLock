@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.widget.Toast
+import androidx.fragment.app.FragmentActivity
 import com.emilkrebs.watchlock.R
 import com.emilkrebs.watchlock.receivers.AdminReceiver
 import com.emilkrebs.watchlock.utils.Constants.LOCK_NEARBY_INTERVAL_KEY
@@ -24,31 +25,31 @@ class Preferences(context: Context) {
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(Constants.PREFERENCE_FILE_KEY, Context.MODE_PRIVATE)
 
-   /* init {
-        sharedPreferences.registerOnSharedPreferenceChangeListener { _, key ->
-            if (key == LOCK_PASSWORD_KEY) {
-                lifecycleScope.launch {
-                    updateDataLayer(getPasscode(), context)
-                }
+    /* init {
+         sharedPreferences.registerOnSharedPreferenceChangeListener { _, key ->
+             if (key == LOCK_PASSWORD_KEY) {
+                 lifecycleScope.launch {
+                     updateDataLayer(getPasscode(), context)
+                 }
 
-            }
-        }
-  }
+             }
+         }
+   }
 
-    private suspend fun updateDataLayer(lockPassword: String, context: Context) {
-        try {
+     private suspend fun updateDataLayer(lockPassword: String, context: Context) {
+         try {
 
-            val request = PutDataMapRequest.create("/lock_password").apply {
-                dataMap.putString("com.emilkrebs.key.lock_password", lockPassword)
-            }.asPutDataRequest().setUrgent()
+             val request = PutDataMapRequest.create("/lock_password").apply {
+                 dataMap.putString("com.emilkrebs.key.lock_password", lockPassword)
+             }.asPutDataRequest().setUrgent()
 
-            val result = dataClient.putDataItem(request).await()
-            Toast.makeText(context, "Settings synced with watch.", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-    */
+             val result = dataClient.putDataItem(request).await()
+             Toast.makeText(context, "Settings synced with watch.", Toast.LENGTH_SHORT).show()
+         } catch (e: Exception) {
+             e.printStackTrace()
+         }
+     }
+     */
 
     fun resetPreferences() {
         sharedPreferences
@@ -56,6 +57,7 @@ class Preferences(context: Context) {
             .clear()
             .apply()
     }
+
     fun getLockNotNearbyInterval(): Int {
         return sharedPreferences
             .getInt(LOCK_NEARBY_INTERVAL_KEY, 15)
@@ -67,29 +69,39 @@ class Preferences(context: Context) {
             .putInt(LOCK_NEARBY_INTERVAL_KEY, interval)
             .apply()
     }
+
     fun setLockNotNearbyEnabled(enabled: Boolean) {
         sharedPreferences
             .edit()
             .putBoolean(LOCK_NOT_NEARBY_KEY, enabled)
             .apply()
     }
+
     fun isLockNotNearbyEnabled(): Boolean {
         return sharedPreferences
             .getBoolean(LOCK_NOT_NEARBY_KEY, false)
     }
+
     fun isWatchLockEnabled(): Boolean {
         return sharedPreferences
             .getBoolean(Constants.ACTIVE_KEY, false)
     }
 
-    fun setWatchLockEnabled(enabled: Boolean, context: Context, onSuccess: () -> Unit = {}, onFailure: () -> Unit = {}) {
+    fun setWatchLockEnabled(
+        enabled: Boolean,
+        context: Context,
+        fragmentActivity: FragmentActivity,
+        onSuccess: () -> Unit = {},
+        onFailure: () -> Unit = {}
+    ) {
         authenticateBiometric(
             context,
-             title = when (enabled) {
+            fragmentActivity,
+            title = when (enabled) {
                 true -> "Enable WatchLock"
                 false -> "Disable WatchLock"
             },
-            description = when (enabled) {
+            subtitle = when (enabled) {
                 true -> "Enable locking your phone using WatchLock."
                 false -> "Disable locking your phone using WatchLock."
             },
@@ -132,8 +144,10 @@ fun getAdminDialogIntent(context: Context): Intent {
 
     return intent
 }
+
 fun revokeAdminPermissions(context: Context) {
-    val devicePolicyManager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val devicePolicyManager =
+        context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val adminComponent = ComponentName(context, AdminReceiver::class.java)
 
     if (devicePolicyManager.isAdminActive(adminComponent)) {

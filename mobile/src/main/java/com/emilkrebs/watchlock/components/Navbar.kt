@@ -1,7 +1,9 @@
 package com.emilkrebs.watchlock.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -13,10 +15,13 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
@@ -24,6 +29,17 @@ enum class NavScreen(val route: String) {
     Home("home"),
     Settings("settings")
 }
+
+@Composable
+@Preview
+fun NavbarPreview() {
+    Navbar(
+        title = "WatchLock",
+        navController = NavController(LocalContext.current),
+        currentScreen = NavScreen.Home
+    )
+}
+
 @Composable
 fun Navbar(
     title: String,
@@ -64,18 +80,19 @@ private fun BackButton(navController: NavController) {
 
 @Composable
 private fun SettingsButton(navController: NavController) {
-    AssistChip(
-        modifier = Modifier.size(AssistChipDefaults.Height),
+    OutlinedButton(
+        modifier = Modifier.size(40.dp),
+        shape = MaterialTheme.shapes.medium,
+        contentPadding = PaddingValues(4.dp),
         onClick = {
             navController.navigate("settings")
         },
-        label = { Text("Settings") },
-        leadingIcon = {
-            Icon(
-                Icons.Filled.Settings,
-                contentDescription = "Open the Settings",
-                Modifier.size(AssistChipDefaults.IconSize)
-            )
-        }
     )
+    {
+        Icon(
+            Icons.Filled.Settings,
+            contentDescription = "Open the Settings",
+            Modifier.fillMaxSize()
+        )
+    }
 }

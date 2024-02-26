@@ -1,6 +1,8 @@
 package com.emilkrebs.watchlock
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.JsonReader
@@ -25,12 +27,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -46,11 +50,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import com.emilkrebs.watchlock.components.NavScreen
 import com.emilkrebs.watchlock.components.Navbar
@@ -69,7 +77,7 @@ import kotlin.math.roundToInt
 @Preview
 private fun SettingsScreenPreview() {
     preferences = Preferences(LocalContext.current)
-
+    isPreview = LocalInspectionMode.current
     SettingsScreen(
         context = LocalContext.current, navController = NavController(LocalContext.current)
     )
@@ -79,10 +87,7 @@ private fun SettingsScreenPreview() {
 fun SettingsScreen(context: Context, navController: NavController) {
     var isWatchLockEnabled by remember { mutableStateOf(preferences.isWatchLockEnabled()) }
     var isLockNotNearbyEnabled by remember { mutableStateOf(preferences.isLockNotNearbyEnabled()) }
-    var latestVersion by remember { mutableStateOf("") }
-
-    // get the version name from build.gradle.kts
-    val versionName = context.packageManager.getPackageInfo(context.packageName, 0).versionName
+    val fragmentActivity = LocalContext.current as FragmentActivity
 
     Surface(
         modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
@@ -106,12 +111,16 @@ fun SettingsScreen(context: Context, navController: NavController) {
                 Section(title = "General", content = {
                     BooleanSetting(
                         label = "Enable WatchLock",
-                        details = "Enable or disable the locking your phone using WatchLock.",
+                        details = "Enable or disable locking your phone using WatchLock.",
                         enabled = isWatchLockEnabled
                     ) {
-                        preferences.setWatchLockEnabled(it, context, onSuccess = {
-                            isWatchLockEnabled = it
-                        })
+                        preferences.setWatchLockEnabled(
+                            it, context, fragmentActivity, onSuccess = {
+                                isWatchLockEnabled = it
+                            }, onFailure = {
+                                isWatchLockEnabled = !it
+                            }
+                        )
                     }
 
                     ResetWatchLockSetting(context, navController)
@@ -145,29 +154,67 @@ fun SettingsScreen(context: Context, navController: NavController) {
                     }
                 })
 
-                Section(title = "About", content = {
-                    Column {
-                        Text(
-                            "Current version: $versionName",
-                            style = MaterialTheme.typography.labelLarge,
-                        )
-
-                        if (latestVersion.isNotEmpty()) {
-                            Text(
-                                "Latest version available: $latestVersion",
-                                style = MaterialTheme.typography.labelLarge,
-                            )
-                        }
-                    }
-                    CheckVersionButton(context) {
-                        latestVersion = it
-                    }
-                })
+                AboutSection(context)
             }
         }
     }
 }
 
+
+@Composable
+fun AboutSection(context: Context) {
+    var latestVersion by remember { mutableStateOf("") }
+    val versionName = getVersionName(context)
+    val versionCode = getVersionCode(context)
+
+    Section(title = "About", content = {
+        if (latestVersion.isNotEmpty()) {
+            // show package name
+            ButtonSetting(
+                label = "Latest Version", details = "v$latestVersion (Current: v$versionName)"
+            ) {
+                context.startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://github.com/emilkrebs/WatchLock/releases/latest")
+                    )
+                )
+            }
+        }
+
+        // github link
+        ButtonSetting(
+            label = "GitHub", icon = {
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.github_logo),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                )
+            }, details = "View the source code on GitHub."
+        ) {
+            context.startActivity(
+                Intent(
+                    Intent.ACTION_VIEW, Uri.parse("https://github.com/emilkrebs/WatchLock")
+                )
+            )
+        }
+
+        CheckVersionButton(context) {
+            latestVersion = it
+        }
+
+
+        Row(
+            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                "WatchLock Version v$versionName ($versionCode)",
+                style = MaterialTheme.typography.labelMedium,
+            )
+        }
+
+    })
+}
 
 @Composable
 @Preview
@@ -205,6 +252,11 @@ fun RangeDialog(
                 ) {
                     Slider(value = sliderValue,
                         valueRange = valueRange,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                            inactiveTrackColor = MaterialTheme.colorScheme.onSurface
+                        ),
                         onValueChange = { sliderValue = it })
                     Text(
                         "${sliderValue.roundToInt()}$unitName",
@@ -364,7 +416,10 @@ fun RangeSetting(
 
 @Composable
 fun ButtonSetting(
-    label: String, details: String = "", onClick: () -> Unit = { }
+    label: String,
+    details: String = "",
+    icon: @Composable () -> Unit = { },
+    onClick: () -> Unit = { }
 ) {
     Row(
         modifier = Modifier
@@ -372,9 +427,11 @@ fun ButtonSetting(
             .fillMaxWidth()
             .wrapContentHeight(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
 
         ) {
+        icon()
+
         Column(
             modifier = Modifier.wrapContentSize()
         ) {
@@ -397,7 +454,7 @@ fun ButtonSetting(
 fun ResetWatchLockSetting(context: Context, navController: NavController) {
     var showConfirmationDialog by remember { mutableStateOf(false) }
 
-        if (showConfirmationDialog) {
+    if (showConfirmationDialog) {
         Dialog(onDismissRequest = {
             showConfirmationDialog = false
         }) {
@@ -415,18 +472,16 @@ fun ResetWatchLockSetting(context: Context, navController: NavController) {
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        "Reset WatchLock",
-                        style = MaterialTheme.typography.titleLarge
+                        "Reset WatchLock", style = MaterialTheme.typography.titleLarge
                     )
 
                     Column {
                         Text(
-                            "Caution:",
-                            style = MaterialTheme.typography.bodyLarge
+                            "Caution:", style = MaterialTheme.typography.bodyLarge
                         )
 
                         Text(
-                            "Are you sure you want to reset the WatchLock settings and revoke the admin permissions?\nThis action will cause WatchLock to stop restart.",
+                            "Are you sure you want to reset the WatchLock settings and revoke the admin permissions?\nThis action will cause WatchLock to restart.",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -459,11 +514,15 @@ fun ResetWatchLockSetting(context: Context, navController: NavController) {
             }
         }
     }
-    ButtonSetting(label = "Reset WatchLock", details = "Reset the WatchLock settings and revoke admin privileges.") {
+    ButtonSetting(
+        label = "Reset WatchLock",
+        details = "Reset the WatchLock settings and revoke admin privileges."
+    ) {
         showConfirmationDialog = true
     }
 
 }
+
 @Composable
 fun CheckVersionButton(context: Context, onLatestVersion: (versionName: String) -> Unit = {}) {
     val scope = rememberCoroutineScope()
@@ -510,7 +569,13 @@ fun CheckVersionButton(context: Context, onLatestVersion: (versionName: String) 
                     rotationZ = angle
                 })
         }
-        Text("Check for updates")
+        Text(
+            text = when {
+                fetchingVersion -> "Fetching latest version…"
+                else -> "Check for updates"
+            }
+
+        )
     }
 }
 
@@ -559,6 +624,16 @@ fun fetchLatestVersion(onSuccess: (versionName: String) -> Unit = {}, onError: (
     }
 }
 
-fun getCurrentVersion(context: Context): String {
+fun getVersionName(context: Context): String {
+    if (isPreview) {
+        return "x.x.x"
+    }
     return context.packageManager.getPackageInfo(context.packageName, 0).versionName
+}
+
+fun getVersionCode(context: Context): Long {
+    if (isPreview) {
+        return 0
+    }
+    return context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode
 }

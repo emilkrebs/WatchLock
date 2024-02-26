@@ -3,7 +3,7 @@ package com.emilkrebs.watchlock.utils
 import android.content.Context
 import android.util.JsonReader
 import android.widget.Toast
-import com.emilkrebs.watchlock.getCurrentVersion
+import com.emilkrebs.watchlock.getVersionName
 import java.net.URL
 
 suspend fun fetchLatestVersion(context: Context) {
@@ -31,7 +31,7 @@ suspend fun fetchLatestVersion(context: Context) {
 
         if (latestVersion.isNotEmpty()) {
             // compare the versions
-            val currentVersion = getCurrentVersion(context)
+            val currentVersion = getVersionName(context)
             if (latestVersion != currentVersion) {
                 // show a dialog to the user that a new version is available
                 Toast.makeText(

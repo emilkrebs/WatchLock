@@ -1,26 +1,40 @@
 package com.emilkrebs.watchlock.utils
 
 import android.content.Context
-import android.hardware.biometrics.BiometricPrompt
-import android.os.CancellationSignal
+import android.widget.Toast
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
-fun authenticateBiometric(context: Context, title: String = "", subtitle: String = "", description: String = "",  onSuccess: () -> Unit = {}, onFailure: () -> Unit = {}) {
+import androidx.fragment.app.FragmentActivity
+import java.util.concurrent.Executor
+
+private lateinit var executor: Executor
+private lateinit var biometricPrompt: BiometricPrompt
+private lateinit var promptInfo: BiometricPrompt.PromptInfo
+
+fun authenticateBiometric(
+    context: Context,
+    fragmentActivity: FragmentActivity,
+    title: String = "",
+    subtitle: String = "",
+    onSuccess: () -> Unit = {},
+    onFailure: () -> Unit = {}
+) {
+    if (!isAvailable(context)) {
+        Toast.makeText(
+            context, "Biometric authentication is not available on this device.", Toast.LENGTH_SHORT
+        ).show()
+        return
+    }
+    executor = ContextCompat.getMainExecutor(context)
+    promptInfo = BiometricPrompt.PromptInfo.Builder().setTitle(title)
+        .setSubtitle(subtitle)
+        .setConfirmationRequired(false)
+        .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL).build()
+
     val executor = ContextCompat.getMainExecutor(context)
 
-    val biometricPrompt = BiometricPrompt.Builder(context)
-        .setTitle(title)
-        .setSubtitle(subtitle)
-        .setDescription(description)
-        .setNegativeButton("Cancel", executor) { _, _ ->
-            onFailure()
-        }
-        .setConfirmationRequired(true)
-        .build()
-
-    val cancellationSignal = CancellationSignal()
-    cancellationSignal.setOnCancelListener(onFailure)
-
-    biometricPrompt.authenticate(cancellationSignal, executor, object : BiometricPrompt.AuthenticationCallback() {
+    val callback = object : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             super.onAuthenticationError(errorCode, errString)
             onFailure()
@@ -35,5 +49,16 @@ fun authenticateBiometric(context: Context, title: String = "", subtitle: String
             super.onAuthenticationFailed()
             onFailure()
         }
-    })
+    }
+    biometricPrompt =  BiometricPrompt(fragmentActivity, executor, callback)
+    biometricPrompt.authenticate(promptInfo)
+}
+
+
+fun isAvailable(context: Context): Boolean {
+    val biometricManager = BiometricManager.from(context)
+    return when (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)) {
+        BiometricManager.BIOMETRIC_SUCCESS -> true
+        else -> false
+    }
 }

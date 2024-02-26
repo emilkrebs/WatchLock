@@ -1,15 +1,16 @@
 package com.emilkrebs.watchlock.services
 
 import android.app.KeyguardManager
+import android.content.Context
 import android.content.Intent
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.emilkrebs.watchlock.preferences
+import com.emilkrebs.watchlock.utils.Preferences
 import com.emilkrebs.watchlock.utils.lockPhoneDialog
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 import kotlinx.coroutines.SupervisorJob
 
 const val ACTION_PING_BROADCAST = "com.emilkrebs.watchlock.PING"
+
 
 class WatchListenerService : WearableListenerService() {
     private val job = SupervisorJob()
@@ -28,16 +29,16 @@ class WatchListenerService : WearableListenerService() {
         when (message.path) {
             WatchCommunicationServiceDefaults.COMMAND_PATH -> handleCommand(data)
             WatchCommunicationServiceDefaults.REQUEST_PATH -> handleRequest(data)
-            WatchCommunicationServiceDefaults.PING_PATH -> handlePing(data)
+            WatchCommunicationServiceDefaults.PING_PATH -> handlePing(data, this)
         }
 
     }
 
     private fun handleCommand(command: String) {
-        val isActive = preferences.isWatchLockEnabled()
+        val isActive = Preferences(this).isWatchLockEnabled()
 
         if (command == "lock_phone") {
-            if (isActive && watchCommunicationService.isAdminActive()) {
+            if (isActive) {
                 lockPhoneDialog(this)
             }
         }
@@ -49,7 +50,7 @@ class WatchListenerService : WearableListenerService() {
         }
     }
 
-    private fun handlePing(message: String) {
+    private fun handlePing(message: String, context: Context) {
         if (message == "ping") {
             return watchCommunicationService.sendMessage(
                 Message.fromString(
@@ -63,7 +64,7 @@ class WatchListenerService : WearableListenerService() {
             intent.action = ACTION_PING_BROADCAST
             intent.putExtra("ping", true)
 
-            LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+            context.sendBroadcast(intent)
         }
     }
 
