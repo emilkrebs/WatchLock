@@ -6,6 +6,9 @@
         <State />
       </entry>
       <entry key="mobile">
+        <State />
+      </entry>
+      <entry key="wear">
         <State>
           <runningDeviceTargetSelectedWithDropDown>
             <Target>
@@ -18,23 +21,7 @@
               </deviceKey>
             </Target>
           </runningDeviceTargetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-02-25T20:41:35.348530900Z" />
-        </State>
-      </entry>
-      <entry key="wear">
-        <State>
-          <runningDeviceTargetSelectedWithDropDown>
-            <Target>
-              <type value="RUNNING_DEVICE_TARGET" />
-              <deviceKey>
-                <Key>
-                  <type value="SERIAL_NUMBER" />
-                  <value value="adb-RFATB0FDP9X-RVSnFf._adb-tls-connect._tcp" />
-                </Key>
-              </deviceKey>
-            </Target>
-          </runningDeviceTargetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-02-24T23:41:55.079761600Z" />
+          <timeTargetWasSelectedWithDropDown value="2024-02-26T21:50:58.701483100Z" />
         </State>
       </entry>
     </value>

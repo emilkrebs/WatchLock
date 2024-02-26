@@ -1,6 +1,7 @@
 package com.emilkrebs.watchlock.workers
 
 import android.content.Context
+import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.emilkrebs.watchlock.preferences
@@ -17,6 +18,7 @@ class CheckWatchNearbyWorker(context: Context, params: WorkerParameters) : Worke
         Wearable.getNodeClient(context).connectedNodes.addOnSuccessListener { nodes ->
             nodes.forEach { node ->
                 if (!node.isNearby && preferences.isLockNotNearbyEnabled()) {
+                    Log.d("CheckWatchNearbyWorker", "Locking phone because watch is not nearby")
                     lockPhoneDialog(context, "Reason: Your watch is not nearby")
                 }
             }

@@ -21,9 +21,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.emilkrebs.watchlock.R
 
 enum class NavScreen(val route: String) {
     Home("home"),
@@ -34,7 +36,7 @@ enum class NavScreen(val route: String) {
 @Preview
 fun NavbarPreview() {
     Navbar(
-        title = "WatchLock",
+        title = stringResource(R.string.app_name),
         navController = NavController(LocalContext.current),
         currentScreen = NavScreen.Home
     )
@@ -67,11 +69,11 @@ private fun BackButton(navController: NavController) {
         onClick = {
             navController.popBackStack()
         },
-        label = { Text("Back") },
+        label = { Text(stringResource(R.string.back)) },
         leadingIcon = {
             Icon(
                 Icons.Filled.ArrowBack,
-                contentDescription = "Back to previous screen",
+                contentDescription = stringResource(R.string.back_to_previous_screen),
                 Modifier.size(AssistChipDefaults.IconSize)
             )
         }
@@ -91,7 +93,7 @@ private fun SettingsButton(navController: NavController) {
     {
         Icon(
             Icons.Filled.Settings,
-            contentDescription = "Open the Settings",
+            contentDescription = stringResource(R.string.open_the_settings),
             Modifier.fillMaxSize()
         )
     }

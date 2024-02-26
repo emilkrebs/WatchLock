@@ -24,6 +24,7 @@ fun authenticateBiometric(
         Toast.makeText(
             context, "Biometric authentication is not available on this device.", Toast.LENGTH_SHORT
         ).show()
+        onSuccess()
         return
     }
     executor = ContextCompat.getMainExecutor(context)
@@ -57,7 +58,7 @@ fun authenticateBiometric(
 
 fun isAvailable(context: Context): Boolean {
     val biometricManager = BiometricManager.from(context)
-    return when (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)) {
+    return when (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL)) {
         BiometricManager.BIOMETRIC_SUCCESS -> true
         else -> false
     }

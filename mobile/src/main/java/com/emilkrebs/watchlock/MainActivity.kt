@@ -9,8 +9,8 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -56,11 +56,11 @@ fun MobileApp(context: Context) {
     val navController = rememberNavController()
 
     val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-        slideInVertically(animationSpec = tween(200)) + fadeIn(animationSpec = tween(100))
+        slideInHorizontally(animationSpec = tween(100)) + fadeIn(animationSpec = tween(100))
     }
 
     val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-        slideOutHorizontally(animationSpec = tween(200)) + fadeOut(animationSpec = tween(100))
+        slideOutVertically(animationSpec = tween(100)) + fadeOut(animationSpec = tween(100))
     }
 
     WatchLockTheme {

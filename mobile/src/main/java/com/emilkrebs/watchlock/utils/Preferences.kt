@@ -8,6 +8,7 @@ import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import com.emilkrebs.watchlock.R
+import com.emilkrebs.watchlock.isPreview
 import com.emilkrebs.watchlock.receivers.AdminReceiver
 import com.emilkrebs.watchlock.utils.Constants.LOCK_NEARBY_INTERVAL_KEY
 import com.emilkrebs.watchlock.utils.Constants.LOCK_NOT_NEARBY_KEY
@@ -98,13 +99,10 @@ class Preferences(context: Context) {
             context,
             fragmentActivity,
             title = when (enabled) {
-                true -> "Enable WatchLock"
-                false -> "Disable WatchLock"
+                true -> context.getString(R.string.enable_watchlock)
+                false -> context.getString(R.string.disable_watchlock)
             },
-            subtitle = when (enabled) {
-                true -> "Enable locking your phone using WatchLock."
-                false -> "Disable locking your phone using WatchLock."
-            },
+            subtitle = context.getString(R.string.biometric_subtitle),
             onSuccess = {
                 sharedPreferences
                     .edit()
@@ -120,6 +118,7 @@ class Preferences(context: Context) {
 }
 
 fun isAdminActive(context: Context): Boolean {
+    if(isPreview) return true
     return try {
         val devicePolicyManager =
             context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
@@ -152,6 +151,5 @@ fun revokeAdminPermissions(context: Context) {
 
     if (devicePolicyManager.isAdminActive(adminComponent)) {
         devicePolicyManager.removeActiveAdmin(adminComponent)
-        Toast.makeText(context, "Admin permissions revoked", Toast.LENGTH_SHORT).show()
     }
 }

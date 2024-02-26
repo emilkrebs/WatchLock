@@ -27,7 +27,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -53,6 +52,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -96,7 +96,7 @@ fun SettingsScreen(context: Context, navController: NavController) {
             modifier = Modifier.fillMaxSize()
         ) {
             Navbar(
-                title = "Settings",
+                title = stringResource(R.string.settings),
                 navController = navController,
                 currentScreen = NavScreen.Settings
             )
@@ -108,10 +108,10 @@ fun SettingsScreen(context: Context, navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
 
-                Section(title = "General", content = {
+                Section(title = stringResource(R.string.general), content = {
                     BooleanSetting(
-                        label = "Enable WatchLock",
-                        details = "Enable or disable locking your phone using WatchLock.",
+                        label = stringResource(R.string.enable_watchlock),
+                        details = stringResource(R.string.enable_watchlock_details),
                         enabled = isWatchLockEnabled
                     ) {
                         preferences.setWatchLockEnabled(
@@ -126,10 +126,10 @@ fun SettingsScreen(context: Context, navController: NavController) {
                     ResetWatchLockSetting(context, navController)
                 })
 
-                Section(title = "Experimental", content = {
+                Section(title = stringResource(R.string.experimental), content = {
                     BooleanSetting(
-                        label = "Lock on distance",
-                        details = "Lock the phone when the watch is not nearby.",
+                        label = stringResource(R.string.lock_on_distance),
+                        details = stringResource(R.string.lock_on_distance_details),
                         enabled = isLockNotNearbyEnabled
                     ) {
                         preferences.setLockNotNearbyEnabled(it)
@@ -143,10 +143,10 @@ fun SettingsScreen(context: Context, navController: NavController) {
 
                     if (isLockNotNearbyEnabled) {
                         RangeSetting(
-                            label = "Nearby Interval",
-                            details = "The interval in which the phone checks if the watch is nearby.",
+                            label = stringResource(R.string.nearby_interval),
+                            details = stringResource(R.string.nearby_interval_details),
                             valueRange = 15f..60f,
-                            unitName = " minutes",
+                            unitName = " ${stringResource(R.string.minutes)}",
                             range = preferences.getLockNotNearbyInterval()
                         ) {
                             preferences.setLockNotNearbyInterval(it)
@@ -167,16 +167,19 @@ fun AboutSection(context: Context) {
     val versionName = getVersionName(context)
     val versionCode = getVersionCode(context)
 
-    Section(title = "About", content = {
+    Section(title = stringResource(R.string.about), content = {
         if (latestVersion.isNotEmpty()) {
             // show package name
             ButtonSetting(
-                label = "Latest Version", details = "v$latestVersion (Current: v$versionName)"
+                label = stringResource(R.string.latest_version),
+                details = String.format(
+                    stringResource(R.string.latest_version_details), latestVersion, versionName
+                )
             ) {
                 context.startActivity(
                     Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://github.com/emilkrebs/WatchLock/releases/latest")
+                        Uri.parse(context.getString(R.string.github_release_link))
                     )
                 )
             }
@@ -184,17 +187,17 @@ fun AboutSection(context: Context) {
 
         // github link
         ButtonSetting(
-            label = "GitHub", icon = {
+            label = stringResource(R.string.github), icon = {
                 Icon(
                     imageVector = ImageVector.vectorResource(R.drawable.github_logo),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
                 )
-            }, details = "View the source code on GitHub."
+            }, details = stringResource(R.string.view_source)
         ) {
             context.startActivity(
                 Intent(
-                    Intent.ACTION_VIEW, Uri.parse("https://github.com/emilkrebs/WatchLock")
+                    Intent.ACTION_VIEW, Uri.parse(context.getString(R.string.github_link))
                 )
             )
         }
@@ -208,7 +211,11 @@ fun AboutSection(context: Context) {
             modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
         ) {
             Text(
-                "WatchLock Version v$versionName ($versionCode)",
+                String.format(
+                    stringResource(R.string.version_text),
+                    versionName,
+                    versionCode
+                ),
                 style = MaterialTheme.typography.labelMedium,
             )
         }
@@ -220,7 +227,7 @@ fun AboutSection(context: Context) {
 @Preview
 fun RangeDialog(
     defaultValue: Float = 0f,
-    title: String = "Enter Range",
+    title: String = "",
     valueRange: ClosedFloatingPointRange<Float> = 1f..10f,
     unitName: String = "",
     onRangeEntered: (range: Int) -> Unit = {},
@@ -271,12 +278,12 @@ fun RangeDialog(
                     OutlinedButton(
                         onClick = onClose,
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                     Button(
                         onClick = { onRangeEntered(sliderValue.roundToInt()) },
                     ) {
-                        Text("Okay")
+                        Text(stringResource(R.string.okay))
                     }
                 }
             }
@@ -472,16 +479,18 @@ fun ResetWatchLockSetting(context: Context, navController: NavController) {
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        "Reset WatchLock", style = MaterialTheme.typography.titleLarge
+                        stringResource(R.string.reset_watchlock),
+                        style = MaterialTheme.typography.titleLarge
                     )
 
                     Column {
                         Text(
-                            "Caution:", style = MaterialTheme.typography.bodyLarge
+                            stringResource(R.string.caution),
+                            style = MaterialTheme.typography.bodyLarge
                         )
 
                         Text(
-                            "Are you sure you want to reset the WatchLock settings and revoke the admin permissions?\nThis action will cause WatchLock to restart.",
+                            stringResource(R.string.reset_watchlock_warning),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -496,7 +505,7 @@ fun ResetWatchLockSetting(context: Context, navController: NavController) {
                                 showConfirmationDialog = false
                             },
                         ) {
-                            Text("Cancel")
+                            Text(stringResource(R.string.cancel))
                         }
                         Button(
                             onClick = {
@@ -507,7 +516,7 @@ fun ResetWatchLockSetting(context: Context, navController: NavController) {
                                 navController.navigate(NavScreen.Home.route)
                             },
                         ) {
-                            Text("Reset")
+                            Text(stringResource(R.string.reset))
                         }
                     }
                 }
@@ -515,8 +524,8 @@ fun ResetWatchLockSetting(context: Context, navController: NavController) {
         }
     }
     ButtonSetting(
-        label = "Reset WatchLock",
-        details = "Reset the WatchLock settings and revoke admin privileges."
+        label = stringResource(R.string.reset_watchlock),
+        details = stringResource(R.string.reset_watchlock_details),
     ) {
         showConfirmationDialog = true
     }
@@ -545,14 +554,16 @@ fun CheckVersionButton(context: Context, onLatestVersion: (versionName: String) 
                 fetchingVersion = true
                 fetchLatestVersion(onSuccess = {
                     Toast.makeText(
-                        context, "Latest version available: $it", Toast.LENGTH_LONG
+                        context,
+                        String.format(context.getString(R.string.latest_version_available), it),
+                        Toast.LENGTH_LONG
                     ).show()
                     fetchingVersion = false
                     onLatestVersion(it)
                 }, onError = {
                     Toast.makeText(
                         context,
-                        "There was an error while fetching the latest version.",
+                        context.getString(R.string.latest_version_failed),
                         Toast.LENGTH_LONG
                     ).show()
                     fetchingVersion = false
@@ -564,15 +575,15 @@ fun CheckVersionButton(context: Context, onLatestVersion: (versionName: String) 
     ) {
         if (fetchingVersion) {
             Icon(Icons.Default.Refresh,
-                contentDescription = "Ping",
+                contentDescription = stringResource(R.string.fetching_latest_version),
                 modifier = Modifier.graphicsLayer {
                     rotationZ = angle
                 })
         }
         Text(
             text = when {
-                fetchingVersion -> "Fetching latest version…"
-                else -> "Check for updates"
+                fetchingVersion -> stringResource(R.string.fetching_latest_version)
+                else -> stringResource(R.string.check_for_updates)
             }
 
         )

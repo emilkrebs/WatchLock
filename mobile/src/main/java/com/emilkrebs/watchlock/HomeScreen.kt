@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
@@ -66,9 +67,12 @@ import com.emilkrebs.watchlock.utils.isAdminActive
 data class CheckListItem(val text: String, val success: Boolean)
 
 val pingFilter = IntentFilter("com.emilkrebs.watchlock.PING")
+private const val pingTimeout = 8000L
+
 enum class PingStatus {
     SUCCESS, PENDING, FAILED, NONE
 }
+
 @Composable
 fun HomeScreen(context: Context, navController: NavController) {
     var pingStatus by remember { mutableStateOf(PingStatus.NONE) }
@@ -123,12 +127,13 @@ fun HomeScreen(context: Context, navController: NavController) {
             }
 
             Lifecycle.Event.ON_START -> {
-                context.registerReceiver(pingReceiver, pingFilter, Context.RECEIVER_NOT_EXPORTED)
+                context.registerReceiver(pingReceiver, pingFilter, Context.RECEIVER_EXPORTED)
             }
 
             Lifecycle.Event.ON_DESTROY -> {
                 context.unregisterReceiver(pingReceiver)
             }
+
             else -> {}
         }
     }
@@ -163,10 +168,13 @@ fun HomeScreen(context: Context, navController: NavController) {
                         if (!adminActive) {
                             context.startActivity(getAdminDialogIntent(context))
                         } else {
-
-                            preferences.setWatchLockEnabled(!watchLockEnabled, context, fragmentActivity, onSuccess = {
-                                watchLockEnabled = !watchLockEnabled
-                            })
+                            preferences.setWatchLockEnabled(
+                                !watchLockEnabled,
+                                context,
+                                fragmentActivity,
+                                onSuccess = {
+                                    watchLockEnabled = !watchLockEnabled
+                                })
                         }
                     }
 
@@ -177,14 +185,18 @@ fun HomeScreen(context: Context, navController: NavController) {
                                 context.getString(R.string.ping_already_pending),
                                 Toast.LENGTH_SHORT
                             ).show()
-                            return@PingButton
-                        }
-                        pingStatus = try {
-                            WatchCommunicationService(context).pingWatch()
-                            Handler(Looper.getMainLooper()).postDelayed(pingTimeoutRunnable, 8000)
-                            PingStatus.PENDING
-                        } catch (e: Exception) {
-                            PingStatus.FAILED
+                        } else {
+                            pingStatus = try {
+                                WatchCommunicationService(context).pingWatch()
+                                Handler(Looper.getMainLooper()).postDelayed(
+                                    pingTimeoutRunnable,
+                                    pingTimeout
+                                )
+                                PingStatus.PENDING
+                            } catch (e: Exception) {
+                                Log.e("Ping", e.message.toString())
+                                PingStatus.FAILED
+                            }
                         }
                     }
                 }
@@ -299,13 +311,13 @@ fun ChecklistItem(text: String, success: Boolean) {
             if (success) {
                 Icon(
                     Icons.Default.Check,
-                    contentDescription = "Success",
+                    contentDescription = stringResource(R.string.success),
                     tint = MaterialTheme.colorScheme.primary
                 )
             } else {
                 Icon(
                     Icons.Default.Close,
-                    contentDescription = "Failed",
+                    contentDescription = stringResource(R.string.failed),
                     tint = MaterialTheme.colorScheme.error
                 )
             }
@@ -366,7 +378,7 @@ fun PingButton(pingStatus: PingStatus, onClick: () -> Unit) {
         if (pingStatus == PingStatus.PENDING) {
             Icon(
                 Icons.Default.Refresh,
-                contentDescription = "Ping",
+                contentDescription = stringResource(R.string.ping_watch),
                 modifier = Modifier.graphicsLayer {
                     rotationZ = angle
                 })
