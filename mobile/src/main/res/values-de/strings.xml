@@ -1,32 +1,55 @@
 <resources>
-    <string name="app_name" translatable="false">WatchLock</string>
-
-    <string name="admin_explanation">WatchLock benötigt Administratorrechte, um den Bildschirm zu sperren.</string>
-
+    <string name="about">Über</string>
+    <string name="activate_watchlock">Aktivieren</string>
     <string name="admin_active">Admin aktiv</string>
+    <string name="admin_disabled">Admin deaktiviert</string>
+    <string name="admin_enabled">Admin aktiviert</string>
+    <string name="admin_explanation">WatchLock benötigt die Geräteadministratorberechtigung, um den Bildschirm zu sperren.</string>
     <string name="admin_inactive">Admin inaktiv</string>
-
-    <string name="watch_connected">SmartWatch verbunden</string>
-    <string name="no_watch_connected">Keine SmartWatch verbunden</string>
-
-    <string name="watchlock_active">WatchLock aktiv</string>
-    <string name="watchlock_inactive">WatchLock inaktiv</string>
-
-    <string name="ping_success">Ping erfolgreich</string>
+    <string name="admin_status_error">Fehler beim Überprüfen des Admin-Status. Bitte versuchen Sie es erneut.</string>
+    <string name="back">Zurück</string>
+    <string name="back_to_previous_screen">Zurück zum vorherigen Bildschirm</string>
+    <string name="biometric_subtitle">Sie müssen sich mit Ihrem Fingerabdruck oder Ihrer PIN authentifizieren, um fortzufahren.</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="caution">Vorsicht</string>
+    <string name="check_for_updates">Nach Updates suchen</string>
+    <string name="deactivate_watchlock">Deaktivieren</string>
+    <string name="disable_watchlock">WatchLock deaktivieren</string>
+    <string name="enable_watchlock">WatchLock aktivieren</string>
+    <string name="enable_watchlock_details">Aktivieren Sie die Sperrung Ihres Telefons mit WatchLock.</string>
+    <string name="experimental">Experimentell</string>
+    <string name="failed">Gescheitert</string>
+    <string name="fetching_latest_version">Lade neueste Version…</string>
+    <string name="general">Allgemein</string>
+    <string name="latest_version">Neueste Version</string>
+    <string name="latest_version_available">Neueste Version verfügbar: %1$s</string>
+    <string name="latest_version_details">v%1$s (Aktuell: v%2$s)</string>
+    <string name="latest_version_failed">Fehler beim Abrufen der neuesten Version.</string>
+    <string name="lock_on_distance">Sperren bei Entfernung</string>
+    <string name="lock_on_distance_details">Das Telefon sperren, wenn die Uhr nicht in der Nähe ist.</string>
+    <string name="minutes">Minuten</string>
+    <string name="nearby_interval">Näheintervall</string>
+    <string name="nearby_interval_details">Das Intervall, in dem das Telefon prüft, ob die Uhr in der Nähe ist.</string>
+    <string name="no_watch_connected">Keine Uhr verbunden</string>
+    <string name="not_ready_explanation">Nicht bereit</string>
+    <string name="okay">Okay</string>
+    <string name="open_the_settings">Einstellungen öffnen</string>
+    <string name="ping_already_pending">Ping bereits angefordert…</string>
     <string name="ping_failed">Ping fehlgeschlagen</string>
-
-    <!-- Checklist explanations -->
+    <string name="ping_pending">Ping angefordert…</string>
+    <string name="ping_success">Ping erfolgreich</string>
+    <string name="ping_watch">Uhr anpingen</string>
     <string name="ready_and_active_explanation">Bereit und aktiv</string>
     <string name="ready_and_inactive_explanation">Bereit und inaktiv</string>
-
-    <string name="not_ready_explanation">Nicht bereit</string>
-
-    <string name="activate_watchlock">Aktivieren</string>
-    <string name="deactivate_watchlock">Deaktivieren</string>
-
-    <string name="ping_watch">SmartWatch pingen</string>
-    <string name="ping_pending">Ping angefordert…</string>
-    <string name="ping_already_pending">Ping wurde bereits angefordert…</string>
-
-    <string name="admin_status_error">Es gab einen Fehler beim Überprüfen des Admin-Status. Bitte versuchen Sie es erneut.</string>
+    <string name="reset">Zurücksetzen</string>
+    <string name="reset_watchlock">WatchLock zurücksetzen</string>
+    <string name="reset_watchlock_details">Einstellungen von WatchLock zurücksetzen und Administratorrechte widerrufen.</string>
+    <string name="reset_watchlock_warning">Möchten Sie die WatchLock-Einstellungen wirklich zurücksetzen und die Administratorrechte widerrufen?\nDies führt zum Neustart von WatchLock.</string>
+    <string name="settings">Einstellungen</string>
+    <string name="success">Erfolg</string>
+    <string name="version_text">WatchLock Version %1$s (%2$s)</string>
+    <string name="view_source">Quellcode auf GitHub anzeigen.</string>
+    <string name="watch_connected">Uhr verbunden</string>
+    <string name="watchlock_active">WatchLock aktiv</string>
+    <string name="watchlock_inactive">WatchLock inaktiv</string>
 </resources>

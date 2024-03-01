@@ -40,8 +40,7 @@ import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationService
 import com.emilkrebs.watchlock.presentation.theme.WatchLockTheme
 import kotlinx.coroutines.delay
 
-
-class MainActivity : ComponentActivity(){
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -129,7 +128,12 @@ fun NotConnected(onRetry: () -> Unit = {}) {
             )
             Spacer(modifier = Modifier.height(18.dp))
             Chip(onClick = onRetry,
-                label = { Text(stringResource(R.string.retry), color = MaterialTheme.colors.onBackground) }, icon = {
+                label = {
+                    Text(
+                        stringResource(R.string.retry),
+                        color = MaterialTheme.colors.onBackground
+                    )
+                }, icon = {
                     Icon(
                         Icons.Filled.Sync,
                         contentDescription = "sync icon",
@@ -156,10 +160,10 @@ fun StatusView(context: Context) {
     // request the lock status every 500ms
     LaunchedEffect(Unit) {
         while (true) {
-            if(!isLoading) {
+            if (!isLoading) {
                 isLoading = true
                 phoneCommunicationService.requestLockStatus()
-                lockStatus = LockStatus.UNKNOWN
+                LockStatus.UNKNOWN
             }
             delay(500)
         }
@@ -174,7 +178,12 @@ fun LockView(context: Context) {
     Chip(onClick = {
         PhoneCommunicationService(context).requestLockPhone()
     },
-        label = { Text(stringResource(R.string.lock_phone), color = MaterialTheme.colors.onBackground) }, icon = {
+        label = {
+            Text(
+                stringResource(R.string.lock_phone),
+                color = MaterialTheme.colors.onBackground
+            )
+        }, icon = {
             Icon(
                 Icons.Filled.Lock,
                 contentDescription = "lock icon",
@@ -183,6 +192,7 @@ fun LockView(context: Context) {
         }
     )
 }
+
 
 @Composable
 fun StatusIcon(lockStatus: LockStatus) {
