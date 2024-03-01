@@ -206,7 +206,6 @@ fun AboutSection(context: Context) {
             latestVersion = it
         }
 
-
         Row(
             modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
         ) {

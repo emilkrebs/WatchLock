@@ -1,5 +1,5 @@
-<resources>
-    <string name="about">About</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="about" tools:ignore="MissingTranslation">About</string>
     <string name="activate_watchlock">Activate</string>
     <string name="admin_active">Admin Active</string>
     <string name="admin_disabled">Admin disabled</string>

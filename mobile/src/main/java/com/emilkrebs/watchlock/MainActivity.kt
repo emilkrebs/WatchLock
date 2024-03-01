@@ -1,7 +1,11 @@
 package com.emilkrebs.watchlock
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -17,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
@@ -33,6 +38,15 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         preferences = Preferences(this)
 
+        if (!Settings.canDrawOverlays(this)) {
+            Log.e("PopupWindowService", "No permission to draw over other apps")
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:$packageName")
+            )
+            ActivityCompat.startActivityForResult(this, intent, 0, Bundle())
+        }
+        
         setContent {
             WatchLockTheme {
                 MobileApp(this)

@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import java.util.concurrent.Executor
 
@@ -14,7 +15,7 @@ private lateinit var promptInfo: BiometricPrompt.PromptInfo
 
 fun authenticateBiometric(
     context: Context,
-    fragmentActivity: FragmentActivity,
+    fragment: FragmentActivity,
     title: String = "",
     subtitle: String = "",
     onSuccess: () -> Unit = {},
@@ -34,8 +35,14 @@ fun authenticateBiometric(
         .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL).build()
 
     val executor = ContextCompat.getMainExecutor(context)
+    val callback = createCallback(onSuccess, onFailure)
 
-    val callback = object : BiometricPrompt.AuthenticationCallback() {
+    biometricPrompt =  BiometricPrompt(fragment, executor, callback)
+    biometricPrompt.authenticate(promptInfo)
+}
+
+fun createCallback(onSuccess: () -> Unit, onFailure: () -> Unit): BiometricPrompt.AuthenticationCallback {
+    return object : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             super.onAuthenticationError(errorCode, errString)
             onFailure()
@@ -51,10 +58,7 @@ fun authenticateBiometric(
             onFailure()
         }
     }
-    biometricPrompt =  BiometricPrompt(fragmentActivity, executor, callback)
-    biometricPrompt.authenticate(promptInfo)
 }
-
 
 fun isAvailable(context: Context): Boolean {
     val biometricManager = BiometricManager.from(context)
