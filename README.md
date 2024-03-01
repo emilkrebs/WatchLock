@@ -1,4 +1,4 @@
-<div id="logo">
+<div id="logo" align="center">
   <a href="https://github.com/emilkrebs/WatchLock" target="_blank" rel="noopener noreferrer">
    <img width="256" alt="WatchLock Logo" src="./images/WatchLock.png">
  </a>
@@ -7,7 +7,7 @@
   </h3>
 </div>
 
-<div id="badges">
+<div id="badges" align="center">
 
 [![GitHub Latest Release)](https://img.shields.io/github/v/release/emilkrebs/WatchLock?logo=github)](https://github.com/emilkrebs/WatchLock/releases/latest)
 
