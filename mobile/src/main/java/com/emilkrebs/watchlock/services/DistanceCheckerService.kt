@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit
 
 
 class DistanceCheckerService : Service() {
-    private var preferences = Preferences(this)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val preferences = Preferences(applicationContext)
         if (!preferences.isLockNotNearbyEnabled()) {
             stopSelf()
         } else {

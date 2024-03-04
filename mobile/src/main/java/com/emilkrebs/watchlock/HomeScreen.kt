@@ -49,7 +49,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -80,7 +79,6 @@ fun HomeScreen(context: Context, navController: NavController) {
     var adminActive by remember { mutableStateOf(isAdminActive(context)) }
     var watchLockEnabled by remember { mutableStateOf(preferences.isWatchLockEnabled()) }
     var mainButtonText by remember { mutableStateOf(context.getString(R.string.activate_watchlock)) }
-    val fragmentActivity = LocalContext.current as FragmentActivity
 
     val pingTimeoutRunnable = Runnable {
         if (pingStatus == PingStatus.PENDING) {
@@ -171,7 +169,7 @@ fun HomeScreen(context: Context, navController: NavController) {
                             preferences.setWatchLockEnabled(
                                 !watchLockEnabled,
                                 context,
-                                fragmentActivity,
+                                context as FragmentActivity ,
                                 onSuccess = {
                                     watchLockEnabled = !watchLockEnabled
                                 })

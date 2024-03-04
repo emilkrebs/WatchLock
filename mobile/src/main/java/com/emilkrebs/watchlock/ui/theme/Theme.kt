@@ -1,6 +1,15 @@
 package com.emilkrebs.watchlock.ui.theme
 
 import android.app.Activity
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -13,6 +22,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import androidx.navigation.NavBackStackEntry
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -35,6 +45,19 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
     */
 )
+
+
+val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+    // enter from the top right corner
+    expandIn(animationSpec = tween(100)) + slideInHorizontally(initialOffsetX = { it }) + fadeIn(
+        animationSpec = tween(100)
+    )
+}
+
+
+val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+    slideOutHorizontally(animationSpec = tween(100)) + fadeOut(animationSpec = tween(50))
+}
 
 @Composable
 fun WatchLockTheme(
