@@ -3,8 +3,7 @@ package com.emilkrebs.watchlock.services
 import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
-import com.emilkrebs.watchlock.utils.Preferences
-import com.emilkrebs.watchlock.utils.lockPhone
+import com.emilkrebs.watchlock.utils.requestLockPhone
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 import kotlinx.coroutines.SupervisorJob
@@ -35,12 +34,8 @@ class WatchListenerService : WearableListenerService() {
     }
 
     private fun handleCommand(command: String) {
-        val isActive = Preferences(this).isWatchLockEnabled()
-
         if (command == "lock_phone") {
-            if (isActive) {
-                lockPhone(this)
-            }
+            requestLockPhone(this)
         }
     }
 

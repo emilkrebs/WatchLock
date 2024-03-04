@@ -6,12 +6,13 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
-import com.emilkrebs.watchlock.preferences
+import com.emilkrebs.watchlock.utils.Preferences
 import com.emilkrebs.watchlock.workers.CheckWatchNearbyWorker
 import java.util.concurrent.TimeUnit
 
 
 class DistanceCheckerService : Service() {
+    private var preferences = Preferences(this)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (!preferences.isLockNotNearbyEnabled()) {
             stopSelf()
