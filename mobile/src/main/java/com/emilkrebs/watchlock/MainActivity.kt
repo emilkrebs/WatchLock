@@ -1,6 +1,5 @@
 package com.emilkrebs.watchlock
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
@@ -40,12 +39,12 @@ fun MobileAppPreview() {
     preferences = Preferences(LocalContext.current)
     isPreview = LocalInspectionMode.current
     WatchLockTheme(darkTheme = true) {
-        MobileApp(LocalContext.current)
+        MobileApp(FragmentActivity())
     }
 }
 
 @Composable
-fun MobileApp(context: Context) {
+fun MobileApp(context: FragmentActivity) {
     val navController = rememberNavController()
 
 

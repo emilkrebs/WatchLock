@@ -73,7 +73,7 @@ enum class PingStatus {
 }
 
 @Composable
-fun HomeScreen(context: Context, navController: NavController) {
+fun HomeScreen(context: FragmentActivity, navController: NavController) {
     var pingStatus by remember { mutableStateOf(PingStatus.NONE) }
     var watchConnected by remember { mutableStateOf(false) }
     var adminActive by remember { mutableStateOf(isAdminActive(context)) }
@@ -169,7 +169,6 @@ fun HomeScreen(context: Context, navController: NavController) {
                             preferences.setWatchLockEnabled(
                                 !watchLockEnabled,
                                 context,
-                                context as FragmentActivity ,
                                 onSuccess = {
                                     watchLockEnabled = !watchLockEnabled
                                 })

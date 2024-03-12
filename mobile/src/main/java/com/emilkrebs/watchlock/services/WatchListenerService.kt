@@ -15,6 +15,16 @@ class WatchListenerService : WearableListenerService() {
     private val job = SupervisorJob()
     private lateinit var watchCommunicationService: WatchCommunicationService
 
+    companion object {
+      fun restartService(context: Context) {
+          val intent = Intent(context, WatchListenerService::class.java)  
+          if(WatchListenerService::class.java.isInstance(context)) {
+              context.stopService(intent)
+              context.startService(intent)
+          }
+      }
+    }
+
     override fun onCreate() {
         super.onCreate()
         watchCommunicationService = WatchCommunicationService(this)

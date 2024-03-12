@@ -41,12 +41,16 @@
     <string name="ping_watch">Uhr anpingen</string>
     <string name="ready_and_active_explanation">Bereit und aktiv</string>
     <string name="ready_and_inactive_explanation">Bereit und inaktiv</string>
+    <string name="restart_services">Dienste neu starten</string>
+    <string name="restart_services_details">Dienste neu starten falls etwas nicht wie erwartet funktioniert.</string>
     <string name="reset">Zurücksetzen</string>
     <string name="reset_watchlock">WatchLock zurücksetzen</string>
     <string name="reset_watchlock_details">Einstellungen von WatchLock zurücksetzen und Administratorrechte widerrufen.</string>
     <string name="reset_watchlock_warning">Möchten Sie die WatchLock-Einstellungen wirklich zurücksetzen und die Administratorrechte widerrufen?\nDies führt zum Neustart von WatchLock.</string>
     <string name="settings">Einstellungen</string>
     <string name="success">Erfolg</string>
+    <string name="services_restart_failed">Dienste konnten nicht neu gestartet werden.</string>
+    <string name="services_restart_success">Dienste wurden erfolgreich neu gestartet.</string>
     <string name="version_text">WatchLock Version %1$s (%2$s)</string>
     <string name="view_source">Quellcode auf GitHub anzeigen.</string>
     <string name="watch_connected">Uhr verbunden</string>

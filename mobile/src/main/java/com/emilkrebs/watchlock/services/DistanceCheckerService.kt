@@ -12,6 +12,16 @@ import java.util.concurrent.TimeUnit
 
 
 class DistanceCheckerService : Service() {
+
+    companion object {
+        fun restartService(context: Context) {
+            val intent = Intent(context, DistanceCheckerService::class.java)
+            if (DistanceCheckerService::class.java.isInstance(context)) {
+                context.stopService(intent)
+                context.startService(intent)
+            }
+        }
+    }
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val preferences = Preferences(applicationContext)
         if (!preferences.isLockNotNearbyEnabled()) {

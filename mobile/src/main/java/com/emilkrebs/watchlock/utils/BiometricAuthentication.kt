@@ -13,30 +13,29 @@ private lateinit var biometricPrompt: BiometricPrompt
 private lateinit var promptInfo: BiometricPrompt.PromptInfo
 
 fun authenticateBiometric(
-    context: Context,
-    fragment: FragmentActivity,
+    fragmentActivity: FragmentActivity,
     title: String = "",
     subtitle: String = "",
     onSuccess: () -> Unit = {},
     onFailure: () -> Unit = {}
 ) {
-    if (!isAvailable(context)) {
+    if (!isAvailable(fragmentActivity)) {
         Toast.makeText(
-            context, "Biometric authentication is not available on this device.", Toast.LENGTH_SHORT
+            fragmentActivity, "Biometric authentication is not available on this device.", Toast.LENGTH_SHORT
         ).show()
         onSuccess()
         return
     }
-    executor = ContextCompat.getMainExecutor(context)
+    executor = ContextCompat.getMainExecutor(fragmentActivity)
     promptInfo = BiometricPrompt.PromptInfo.Builder().setTitle(title)
         .setSubtitle(subtitle)
         .setConfirmationRequired(false)
         .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL).build()
 
-    val executor = ContextCompat.getMainExecutor(context)
+    val executor = ContextCompat.getMainExecutor(fragmentActivity)
     val callback = createCallback(onSuccess, onFailure)
 
-    biometricPrompt =  BiometricPrompt(fragment, executor, callback)
+    biometricPrompt =  BiometricPrompt(fragmentActivity, executor, callback)
     biometricPrompt.authenticate(promptInfo)
 }
 

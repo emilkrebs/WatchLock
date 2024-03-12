@@ -90,19 +90,17 @@ class Preferences(context: Context) {
 
     fun setWatchLockEnabled(
         enabled: Boolean,
-        context: Context,
         fragmentActivity: FragmentActivity,
         onSuccess: () -> Unit = {},
         onFailure: () -> Unit = {}
     ) {
         authenticateBiometric(
-            context,
             fragmentActivity,
             title = when (enabled) {
-                true -> context.getString(R.string.enable_watchlock)
-                false -> context.getString(R.string.disable_watchlock)
+                true -> fragmentActivity.getString(R.string.enable_watchlock)
+                false -> fragmentActivity.getString(R.string.disable_watchlock)
             },
-            subtitle = context.getString(R.string.biometric_subtitle),
+            subtitle = fragmentActivity.getString(R.string.biometric_subtitle),
             onSuccess = {
                 sharedPreferences
                     .edit()

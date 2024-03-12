@@ -45,12 +45,16 @@
     <string name="ping_watch">Ping Watch</string>
     <string name="ready_and_active_explanation">Ready and Active</string>
     <string name="ready_and_inactive_explanation">Ready and Inactive</string>
+    <string name="restart_services">Restart Services</string>
+    <string name="restart_services_details">Restart Services in case something is not working as expected.</string>
     <string name="reset">Reset</string>
     <string name="reset_watchlock">Reset WatchLock</string>
     <string name="reset_watchlock_details">Reset WatchLock settings and revoke admin privileges.</string>
     <string name="reset_watchlock_warning">Are you sure you want to reset the WatchLock settings and revoke the admin permissions?\nThis action will cause WatchLock to restart.</string>
     <string name="settings">Settings</string>
     <string name="success">Success</string>
+    <string name="services_restart_failed">Failed to restart services.</string>
+    <string name="services_restart_success">Services restarted successfully.</string>
     <string name="version_text">WatchLock Version %1$s (%2$s)</string>
     <string name="view_source">View the source code on GitHub.</string>
     <string name="watch_connected">Watch Connected</string>

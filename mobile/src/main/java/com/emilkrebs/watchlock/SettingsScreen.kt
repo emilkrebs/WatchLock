@@ -62,6 +62,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import com.emilkrebs.watchlock.components.NavScreen
 import com.emilkrebs.watchlock.components.Navbar
+import com.emilkrebs.watchlock.services.DistanceCheckerService
+import com.emilkrebs.watchlock.services.WatchListenerService
 import com.emilkrebs.watchlock.services.startDistanceCheckerService
 import com.emilkrebs.watchlock.services.stopDistanceCheckerService
 import com.emilkrebs.watchlock.utils.Preferences
@@ -76,18 +78,19 @@ import kotlin.math.roundToInt
 @Composable
 @Preview
 private fun SettingsScreenPreview() {
-    preferences = Preferences(LocalContext.current)
+    val context = LocalContext.current
+    preferences = Preferences(context)
     isPreview = LocalInspectionMode.current
+
     SettingsScreen(
-        context = LocalContext.current, navController = NavController(LocalContext.current)
+        FragmentActivity(), navController = NavController(context)
     )
 }
 
 @Composable
-fun SettingsScreen(context: Context, navController: NavController) {
+fun SettingsScreen(context: FragmentActivity, navController: NavController) {
     var isWatchLockEnabled by remember { mutableStateOf(preferences.isWatchLockEnabled()) }
     var isLockNotNearbyEnabled by remember { mutableStateOf(preferences.isLockNotNearbyEnabled()) }
-    val fragmentActivity = LocalContext.current as FragmentActivity
 
     Surface(
         modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
@@ -115,13 +118,36 @@ fun SettingsScreen(context: Context, navController: NavController) {
                         enabled = isWatchLockEnabled
                     ) {
                         preferences.setWatchLockEnabled(
-                            it, context, fragmentActivity, onSuccess = {
+                            it, context, onSuccess = {
                                 isWatchLockEnabled = it
                             }, onFailure = {
                                 isWatchLockEnabled = !it
                             }
                         )
                     }
+
+
+                    // restart services
+                    ButtonSetting(
+                        label = stringResource(R.string.restart_services),
+                        details = stringResource(R.string.restart_services_details),
+                    ) {
+                        try {
+                            restartServices(context)
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.services_restart_success),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.services_restart_failed),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+
 
                     ResetWatchLockSetting(context, navController)
                 })
@@ -632,6 +658,11 @@ fun fetchLatestVersion(onSuccess: (versionName: String) -> Unit = {}, onError: (
             }
         }
     }
+}
+
+fun restartServices(context: Context) {
+    WatchListenerService.restartService(context)
+    DistanceCheckerService.restartService(context)
 }
 
 fun getVersionName(context: Context): String {
