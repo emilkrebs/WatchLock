@@ -111,6 +111,7 @@ fun Connected(context: Context) {
 }
 
 @Composable
+@Preview
 fun NotConnected(onRetry: () -> Unit = {}) {
     WatchLockTheme {
         Column(
@@ -123,7 +124,7 @@ fun NotConnected(onRetry: () -> Unit = {}) {
         ) {
             Text(
                 text = stringResource(R.string.no_phone_connected),
-                color = MaterialTheme.colors.onPrimary,
+                color = MaterialTheme.colors.onBackground,
                 fontSize = 16.sp
             )
             Spacer(modifier = Modifier.height(18.dp))
