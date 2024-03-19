@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.JsonReader
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
@@ -626,23 +627,19 @@ fun fetchLatestVersion(onSuccess: (versionName: String) -> Unit = {}, onError: (
     executor.execute {
         try {
             var latestVersion = ""
-            URL("https://api.github.com/repos/emilkrebs/WatchLock/releases").openStream()
+            URL("https://api.github.com/repos/emilkrebs/WatchLock/releases/latest").openStream()
                 .use { stream ->
                     JsonReader(stream.reader().buffered()).use { reader ->
-                        reader.beginArray()
+                        reader.beginObject()
                         while (reader.hasNext()) {
-                            reader.beginObject()
-                            while (reader.hasNext()) {
-                                val name = reader.nextName()
-                                if (name == "tag_name") {
-                                    latestVersion = reader.nextString()
-                                } else {
-                                    reader.skipValue()
-                                }
+                            val name = reader.nextName()
+                            if (name == "tag_name") {
+                                latestVersion = reader.nextString()
+                            } else {
+                                reader.skipValue()
                             }
-                            reader.endObject()
                         }
-                        reader.endArray()
+                        reader.endObject()
                     }
                 }
 
@@ -656,7 +653,7 @@ fun fetchLatestVersion(onSuccess: (versionName: String) -> Unit = {}, onError: (
                 }
             }
         } catch (e: Exception) {
-            // show a dialog to the user that the version check failed
+            Log.e("WatchLock", "Failed to fetch latest version", e)
             handler.post {
                 onError()
             }
