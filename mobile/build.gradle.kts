@@ -12,7 +12,7 @@ android {
         applicationId = "com.emilkrebs.watchlock"
         minSdk = 33
         targetSdk = 34
-        versionCode = 2
+        versionCode = 130
         versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

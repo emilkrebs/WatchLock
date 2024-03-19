@@ -9,9 +9,9 @@ android {
 
     defaultConfig {
         applicationId = "com.emilkrebs.watchlock"
-        minSdk = 33
-        targetSdk = 34
-        versionCode = 2
+        minSdk = 30
+        targetSdk = 33
+        versionCode = 130
         versionName = "1.3.0"
 
         vectorDrawables {
