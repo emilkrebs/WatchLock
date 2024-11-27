@@ -670,7 +670,7 @@ fun getVersionName(context: Context): String {
     if (isPreview) {
         return "x.x.x"
     }
-    return context.packageManager.getPackageInfo(context.packageName, 0).versionName
+    return context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "NOT FOUND"
 }
 
 fun getVersionCode(context: Context): Long {
