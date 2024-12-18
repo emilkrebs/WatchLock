@@ -1,8 +1,8 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
-
 
 android {
     namespace = "com.emilkrebs.watchlock"
@@ -54,6 +54,7 @@ android {
     kotlinOptions {
         jvmTarget = "19"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -62,30 +63,30 @@ android {
 }
 
 dependencies {
-    implementation("com.google.android.gms:play-services-wearable:19.0.0")
-    implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-    implementation("androidx.activity:activity-compose:1.9.3")
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.0")
-    implementation(platform("androidx.compose:compose-bom:2024.12.01"))
-    implementation("androidx.navigation:navigation-compose:2.8.5")
-    implementation("androidx.work:work-runtime-ktx:2.10.0")
+    implementation(libs.play.services.wearable)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.ui)
+    implementation(libs.ui.graphics)
+    implementation(libs.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.kotlinx.coroutines.play.services)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.work.runtime.ktx)
 
-    implementation("androidx.biometric:biometric:1.1.0")
+    implementation(libs.androidx.biometric)
 
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
 
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.12.01"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.ui.test.junit4)
 
-    debugImplementation("androidx.compose.ui:ui-tooling:1.7.6")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.7.6")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    debugImplementation(libs.ui.tooling)
+    implementation(libs.androidx.compose.ui.ui.tooling.preview)
+    debugImplementation(libs.ui.test.manifest)
 }

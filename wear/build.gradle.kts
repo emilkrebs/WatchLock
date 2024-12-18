@@ -1,6 +1,7 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -62,21 +63,21 @@ android {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.15.0")
-    implementation("com.google.android.gms:play-services-wearable:19.0.0")
-    implementation("androidx.legacy:legacy-support-v4:1.0.0")
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
-    implementation(platform("androidx.compose:compose-bom:2024.12.01"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.wear.compose:compose-material:1.4.0")
-    implementation("androidx.wear.compose:compose-foundation:1.4.0")
-    implementation("androidx.compose.material:material-icons-extended:1.7.6")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-    implementation("androidx.activity:activity-compose:1.9.3")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.12.01"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.play.services.wearable)
+    implementation(libs.androidx.legacy.support.v4)
+    implementation(libs.androidx.recyclerview)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui.ui)
+    implementation(libs.androidx.compose.ui.ui.tooling.preview2)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.material.icons.extended)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.ui.test.manifest)
 
 }
