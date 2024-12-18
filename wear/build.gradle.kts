@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.ui)
     implementation(libs.androidx.compose.ui.ui.tooling.preview2)
     implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.material.icons.extended)
     implementation(libs.androidx.lifecycle.runtime.ktx)

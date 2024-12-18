@@ -2,9 +2,14 @@ package com.emilkrebs.watchlock
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,6 +28,7 @@ var isPreview = false
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         preferences = Preferences(this)
         
         setContent {
@@ -49,14 +55,13 @@ fun MobileApp(context: FragmentActivity) {
 
 
     WatchLockTheme {
-        Surface(
-            color = MaterialTheme.colorScheme.background
-        ) {
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
             NavHost(
                 navController = navController,
                 startDestination = "home",
                 enterTransition = enterTransition,
-                exitTransition =  exitTransition
+                exitTransition =  exitTransition,
+                modifier = Modifier.padding(innerPadding)
             ) {
                 composable("home") {
                     HomeScreen(context, navController)
