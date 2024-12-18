@@ -23,7 +23,7 @@
 
 Languages: English, German
 
-**Tipp: Bind double-tapping the home button opens the application.**
+**Tip: Bind double-tapping the home button to WatchLock so it opens the application.**
 
 ---
 
