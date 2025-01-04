@@ -2,9 +2,12 @@ package com.emilkrebs.watchlock.presentation
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,6 +40,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,6 +54,7 @@ import androidx.wear.compose.material.Text
 import com.emilkrebs.watchlock.R
 import com.emilkrebs.watchlock.presentation.services.LockStatus
 import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationService
+import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationService.Companion.convertImageByteArrayToBitmap
 import com.emilkrebs.watchlock.presentation.theme.WatchLockTheme
 import kotlinx.coroutines.delay
 
@@ -94,9 +100,7 @@ fun WearApp(context: Context) {
 
 @Composable
 fun Connected(context: Context) {
-    val pagerState = rememberPagerState(pageCount = {
-        2
-    })
+    val pagerState = rememberPagerState(pageCount = { 2 })
 
     WatchLockTheme {
         Box (
@@ -105,6 +109,7 @@ fun Connected(context: Context) {
                 .background(MaterialTheme.colors.background),
         ){
             HorizontalPager(state = pagerState) { page ->
+                Log.d("Pager", "Current Page: $page")
                 when (page) {
                     0 -> {
                         Column(
@@ -138,7 +143,7 @@ fun Connected(context: Context) {
             ) {
                 repeat(pagerState.pageCount) { iteration ->
                     val color =
-                        if (pagerState.currentPage == iteration) Color.DarkGray else Color.LightGray
+                        if (pagerState.currentPage == iteration) Color.LightGray else Color.DarkGray
                     Box(
                         modifier = Modifier
                             .padding(2.dp)
@@ -154,18 +159,39 @@ fun Connected(context: Context) {
 
 @Composable
 fun Screensharing(context: Context) {
+    val phoneCommunicationService = PhoneCommunicationService(context)
+    var currentScreenshot by remember { mutableStateOf<ByteArray?>(null) }
+
+    phoneCommunicationService.requestScreenshot()
+    phoneCommunicationService.onScreenshotReceived = { screenshot ->
+        // handle screenshot
+        currentScreenshot = screenshot
+
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colors.background),
+            .background(MaterialTheme.colors.background)
+            .clickable {
+                phoneCommunicationService.requestScreenshot()
+            },
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            text = "Screensharing",
-            color = MaterialTheme.colors.onBackground,
-            fontSize = 16.sp
-        )
+        if (currentScreenshot != null) {
+            // display the screenshot
+            Image(
+                bitmap = convertImageByteArrayToBitmap(currentScreenshot!!).asImageBitmap(),
+                contentDescription = "Current Screenshot",
+            )
+        } else {
+            Text(
+                text = stringResource(R.string.loading),
+                color = MaterialTheme.colors.onBackground,
+                fontSize = 16.sp
+            )
+        }
     }
 }
 

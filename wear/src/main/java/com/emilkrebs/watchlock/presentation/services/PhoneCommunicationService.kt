@@ -4,6 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Log
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationServiceDefaults.Companion.LOCK_STATUS_PATH
 import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationServiceDefaults.Companion.REQUEST_PATH
@@ -18,6 +22,10 @@ import com.google.android.gms.wearable.Wearable
 class PhoneCommunicationService(private val context: Context) {
 
     companion object {
+
+        fun convertImageByteArrayToBitmap(imageData: ByteArray): Bitmap {
+            return BitmapFactory.decodeByteArray(imageData, 0, imageData.size)
+        }
 
         fun isPhoneConnected(context: Context, onConnected: (Boolean) -> Unit) {
             getNodes(context) { nodes ->
@@ -47,6 +55,12 @@ class PhoneCommunicationService(private val context: Context) {
                     onLockStatusReceived(LockStatus.fromBoolean(isLocked))
                 }
 
+                if (path == PhoneCommunicationServiceDefaults.SCREENSHOT_PATH) {
+                    // received a screenshot
+                    val data = intent.getByteArrayExtra("data")
+                    onScreenshotReceived(data)
+                }
+
             }
         }
 
@@ -56,6 +70,8 @@ class PhoneCommunicationService(private val context: Context) {
     }
 
     var onLockStatusReceived: ((LockStatus) -> Unit) = {}
+
+    var onScreenshotReceived: ((ByteArray?) -> Unit) = {}
 
     fun requestLockPhone() {
         sendMessage(
@@ -68,6 +84,12 @@ class PhoneCommunicationService(private val context: Context) {
 
     fun requestLockStatus() {
         sendMessage(Message.fromString(REQUEST_PATH, "lock_status"))
+    }
+
+    // Request a screenshot from the phone
+    fun requestScreenshot() {
+        Log.d("PhoneCommunicationService", "Requesting screenshot")
+        sendMessage(Message.fromString(REQUEST_PATH, "screenshot"))
     }
 
     /**
@@ -109,6 +131,7 @@ class PhoneCommunicationService(private val context: Context) {
 
 }
 
+// Make sure the paths are exactly the same as in the phone app
 class PhoneCommunicationServiceDefaults {
     companion object {
         const val REQUEST_PATH = "/wearable/request/"
@@ -116,6 +139,7 @@ class PhoneCommunicationServiceDefaults {
         const val PING_PATH = "/wearable/ping/"
 
         const val LOCK_STATUS_PATH = "/wearable/lock_status/"
+        const val SCREENSHOT_PATH = "/wearable/screenshot/"
     }
 }
 

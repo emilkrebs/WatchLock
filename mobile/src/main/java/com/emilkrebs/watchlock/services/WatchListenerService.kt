@@ -1,12 +1,23 @@
 package com.emilkrebs.watchlock.services
 
+import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.media.projection.MediaProjectionManager
+import android.util.Log
+import android.view.SurfaceView
+import android.view.WindowManager
+import android.widget.Toast
+import com.emilkrebs.watchlock.utils.ScreenCaptureHelper
+import com.emilkrebs.watchlock.utils.captureScreen
 import com.emilkrebs.watchlock.utils.requestLockPhone
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 import kotlinx.coroutines.SupervisorJob
+import java.io.ByteArrayOutputStream
 
 const val ACTION_PING_BROADCAST = "com.emilkrebs.watchlock.PING"
 
@@ -14,6 +25,7 @@ const val ACTION_PING_BROADCAST = "com.emilkrebs.watchlock.PING"
 class WatchListenerService : WearableListenerService() {
     private val job = SupervisorJob()
     private lateinit var watchCommunicationService: WatchCommunicationService
+
 
     companion object {
       fun restartService(context: Context) {
@@ -53,6 +65,10 @@ class WatchListenerService : WearableListenerService() {
         if (request == "lock_status") {
             sendLockStatus(isPhoneLocked())
         }
+        else if (request == "screenshot") {
+            Log.d("WatchListenerService", "Received screenshot request")
+            handleScreenshot(this)
+        }
     }
 
     private fun handlePing(message: String, context: Context) {
@@ -71,6 +87,24 @@ class WatchListenerService : WearableListenerService() {
 
             context.sendBroadcast(intent)
         }
+    }
+
+    private fun handleScreenshot(context: Context) {
+
+    }
+
+
+    // Convert bitmap to byte array and send it
+    private fun sendScreenshot(bitmap: Bitmap) {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        watchCommunicationService.sendMessage(
+            Message.fromByteArray(
+                WatchCommunicationServiceDefaults.SCREENSHOT_PATH,
+                byteArray
+            )
+        )
     }
 
     private fun sendLockStatus(isLocked: Boolean) {

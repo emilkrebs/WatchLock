@@ -2,6 +2,7 @@ package com.emilkrebs.watchlock.presentation.services
 
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
+import android.util.Log
 import android.widget.Toast
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.wearable.MessageEvent
@@ -24,6 +25,10 @@ class PhoneListenerService : WearableListenerService(){
             return handlePing(String(messageEvent.data))
         } else if (path == PhoneCommunicationServiceDefaults.COMMAND_PATH) {
             return handleCommand(String(messageEvent.data))
+        }
+        else if (path == PhoneCommunicationServiceDefaults.SCREENSHOT_PATH) {
+            // received a screenshot
+            return handleScreenshot(String(messageEvent.data))
         }
     }
 
@@ -50,6 +55,12 @@ class PhoneListenerService : WearableListenerService(){
 //
 //    }
 //
+
+    private fun handleScreenshot(data: String) {
+        if (data == "screenshot") {
+            Log.d("PhoneListenerService", "Received screenshot")
+        }
+    }
 
     private fun handleCommand(data: String) {
         if (data == "not_active") {

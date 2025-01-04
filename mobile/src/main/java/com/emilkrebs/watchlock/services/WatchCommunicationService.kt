@@ -87,6 +87,7 @@ class WatchCommunicationServiceDefaults {
         const val PING_PATH = "/wearable/ping/"
 
         const val LOCK_STATUS_PATH = "/wearable/lock_status/"
+        const val SCREENSHOT_PATH = "/wearable/screenshot/"
     }
 }
 
@@ -102,6 +103,10 @@ class Message(path: String, data: ByteArray) {
     companion object {
         fun fromString(path: String, data: String): Message {
             return Message(path, data.toByteArray(Charsets.UTF_8))
+        }
+
+        fun fromByteArray(path: String, data: ByteArray): Message {
+            return Message(path, data)
         }
     }
 
