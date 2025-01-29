@@ -4,16 +4,20 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val versionMayor = 1
+val versionMinor = 3
+val versionPatch = 5
+
 android {
     namespace = "com.emilkrebs.watchlock"
     compileSdk = 35
 
     defaultConfig {
         applicationId = "com.emilkrebs.watchlock"
-        minSdk = 33
+        minSdk = 30
         targetSdk = 34
-        versionCode = 132
-        versionName = "1.3.0"
+        versionCode = 100000 + versionMayor * 10000 + versionMinor * 100 + versionPatch
+        versionName = "$versionMayor.$versionMinor.$versionPatch"
 
         vectorDrawables {
             useSupportLibrary = true

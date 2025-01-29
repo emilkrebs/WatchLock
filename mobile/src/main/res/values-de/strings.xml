@@ -54,6 +54,8 @@
     <string name="version_text">WatchLock Version %1$s (%2$s)</string>
     <string name="view_source">Quellcode auf GitHub anzeigen.</string>
     <string name="watch_connected">Uhr verbunden</string>
+    <string name="watch_app_installed">Watch-App installiert</string>
+    <string name="watch_app_not_installed">Watch-App fehlt</string>
     <string name="watchlock_active">WatchLock aktiv</string>
     <string name="watchlock_inactive">WatchLock inaktiv</string>
 </resources>

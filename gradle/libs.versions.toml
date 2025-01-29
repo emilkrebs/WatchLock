@@ -21,6 +21,7 @@ uiToolingPreview = "1.7.6"
 activityCompose = "1.10.0"
 workRuntimeKtx = "2.10.0"
 coreSplashscreen = "1.0.1"
+wearRemoteInteractions = "1.1.0"
 
 [libraries]
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
@@ -55,6 +56,7 @@ ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "uiTooling" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+wear-remote-interactions = { group = "androidx.wear", module = "androidx.wear:wear-remote-interactions", name = "wear-remote-interactions", version.ref = "wearRemoteInteractions" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

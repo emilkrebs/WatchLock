@@ -4,6 +4,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val versionMayor = 1
+val versionMinor = 3
+val versionPatch = 5
+
 android {
     namespace = "com.emilkrebs.watchlock"
     compileSdk = 35
@@ -12,8 +16,8 @@ android {
         applicationId = "com.emilkrebs.watchlock"
         minSdk = 33
         targetSdk = 35
-        versionCode = 131
-        versionName = "1.3.1"
+        versionCode = 200000 + versionMayor * 10000 + versionMinor * 100 + versionPatch
+        versionName = "$versionMayor.$versionMinor.$versionPatch"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -78,6 +82,7 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
 
     implementation(libs.androidx.biometric)
+    implementation(libs.wear.remote.interactions)
 
     testImplementation(libs.junit)
 

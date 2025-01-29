@@ -3,10 +3,18 @@ package com.emilkrebs.watchlock.services
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
+import androidx.wear.remote.interactions.RemoteActivityHelper
 import com.emilkrebs.watchlock.receivers.AdminReceiver
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.Wearable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.tasks.await
 
 class WatchCommunicationService(private val context: Context) {
     private var devicePolicyManager: DevicePolicyManager =
@@ -15,10 +23,35 @@ class WatchCommunicationService(private val context: Context) {
 
 
     companion object {
-        fun isWatchConnected(context: Context, onConnected: (Boolean) -> Unit) {
+        fun openPlayStoreOnWatch(context: Context) {
             getNodes(context) { nodes ->
-                onConnected(nodes.isNotEmpty())
+                if (nodes.isNotEmpty()) {
+                    val remoteActivityHelper =
+                        RemoteActivityHelper(context, Dispatchers.IO.asExecutor())
+
+                    remoteActivityHelper.startRemoteActivity(
+                        Intent(Intent.ACTION_VIEW)
+                            .setData(
+                                Uri.parse("http://play.google.com/store/apps/details?id=com.emilkrebs.watchlock")
+                            )
+                            .addCategory(Intent.CATEGORY_BROWSABLE),
+                        nodes.first()
+                    )
+
+                }
             }
+        }
+
+        suspend fun isWatchConnected(context: Context): Boolean {
+            return Wearable.getNodeClient(context).connectedNodes.await().isNotEmpty()
+        }
+
+        suspend fun isWearAppInstalled(context: Context, capabilityName: String): Boolean {
+            val capabilityInfo = Wearable.getCapabilityClient(context)
+                .getCapability(capabilityName, CapabilityClient.FILTER_REACHABLE)
+                .await()
+            Log.d("WatchCommunicationService", "isWearAppInstalled connected nodes: ${capabilityInfo.nodes}")
+            return capabilityInfo.nodes.isNotEmpty()
         }
 
         fun getNodes(context: Context, onNodesReceived: (Collection<String>) -> Unit) {

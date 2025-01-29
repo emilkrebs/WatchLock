@@ -60,6 +60,7 @@ import com.emilkrebs.watchlock.components.Navbar
 import com.emilkrebs.watchlock.components.OnLifecycleEvent
 import com.emilkrebs.watchlock.services.ACTION_PING_BROADCAST
 import com.emilkrebs.watchlock.services.WatchCommunicationService
+import com.emilkrebs.watchlock.services.WatchCommunicationService.Companion.openPlayStoreOnWatch
 import com.emilkrebs.watchlock.utils.getAdminDialogIntent
 import com.emilkrebs.watchlock.utils.isAdminActive
 
@@ -76,9 +77,9 @@ enum class PingStatus {
 fun HomeScreen(context: FragmentActivity, navController: NavController) {
     var pingStatus by remember { mutableStateOf(PingStatus.NONE) }
     var watchConnected by remember { mutableStateOf(false) }
+    var isWearAppInstalled by remember { mutableStateOf(false) }
     var adminActive by remember { mutableStateOf(isAdminActive(context)) }
     var watchLockEnabled by remember { mutableStateOf(preferences.isWatchLockEnabled()) }
-    var mainButtonText by remember { mutableStateOf(context.getString(R.string.activate_watchlock)) }
 
     val pingTimeoutRunnable = Runnable {
         if (pingStatus == PingStatus.PENDING) {
@@ -86,15 +87,11 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
         }
     }
 
-    mainButtonText = if (!adminActive) stringResource(R.string.activate_watchlock)
-    else if (watchLockEnabled) stringResource(R.string.deactivate_watchlock)
-    else stringResource(R.string.activate_watchlock)
-
-
     LaunchedEffect(Unit) {
         // Check if the watch is connected
-        WatchCommunicationService.isWatchConnected(context) { connected ->
-            watchConnected = connected
+        watchConnected = WatchCommunicationService.isWatchConnected(context)
+        if (watchConnected) {
+            isWearAppInstalled = WatchCommunicationService.isWearAppInstalled(context, "com.emilkrebs.watchlock")
         }
     }
 
@@ -104,11 +101,7 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
             if (intent?.action == ACTION_PING_BROADCAST) {
                 // Handle the broadcast here
                 val pingValue = intent.getBooleanExtra("ping", false)
-                pingStatus = if (pingValue) {
-                    PingStatus.SUCCESS
-                } else {
-                    PingStatus.FAILED
-                }
+                pingStatus = if (pingValue) {  PingStatus.SUCCESS } else { PingStatus.FAILED }
             }
         }
     }
@@ -116,12 +109,7 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
     OnLifecycleEvent { _, event ->
         when (event) {
             Lifecycle.Event.ON_RESUME -> {
-                if (!isPreview) {
-                    WatchCommunicationService.isWatchConnected(context) { connected ->
-                        watchConnected = connected
-                    }
-                    adminActive = isAdminActive(context)
-                }
+                if (!isPreview) { adminActive = isAdminActive(context) }
             }
 
             Lifecycle.Event.ON_START -> {
@@ -146,6 +134,7 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
             Navbar(
                 title = "", navController = navController, currentScreen = NavScreen.Home
             )
+
             Column(
                 modifier = Modifier
                     .wrapContentSize()
@@ -153,7 +142,13 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                CheckList(watchConnected, pingStatus, adminActive, watchLockEnabled)
+                CheckList(
+                    watchConnected,
+                    isWearAppInstalled,
+                    pingStatus,
+                    adminActive,
+                    watchLockEnabled
+                )
 
                 Column(
                     modifier = Modifier
@@ -163,16 +158,19 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     MainButton(adminActive, watchLockEnabled) {
-                        if (!adminActive) {
-                            context.startActivity(getAdminDialogIntent(context))
-                        } else {
-                            preferences.setWatchLockEnabled(
-                                !watchLockEnabled,
-                                context,
-                                onSuccess = {
-                                    watchLockEnabled = !watchLockEnabled
-                                })
-                        }
+                        if (!isWearAppInstalled) {
+                            openPlayStoreOnWatch(context)
+                        } else
+                            if (!adminActive) {
+                                context.startActivity(getAdminDialogIntent(context))
+                            } else {
+                                preferences.setWatchLockEnabled(
+                                    !watchLockEnabled,
+                                    context,
+                                    onSuccess = {
+                                        watchLockEnabled = !watchLockEnabled
+                                    })
+                            }
                     }
 
                     PingButton(pingStatus) {
@@ -204,13 +202,24 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
 
 @Composable
 fun CheckList(
-    watchConnected: Boolean, pingStatus: PingStatus, adminActive: Boolean, watchLockEnabled: Boolean
+    watchConnected: Boolean,
+    wearAppInstalled: Boolean,
+    pingStatus: PingStatus,
+    adminActive: Boolean,
+    watchLockEnabled: Boolean
 ) {
     val checklist: ArrayList<CheckListItem> = ArrayList()
     checklist.add(
         when (watchConnected) {
             true -> CheckListItem(stringResource(R.string.watch_connected), true)
             false -> CheckListItem(stringResource(R.string.no_watch_connected), false)
+        }
+    )
+
+    checklist.add(
+        when (wearAppInstalled) {
+            true -> CheckListItem(stringResource(R.string.watch_app_installed), true)
+            false -> CheckListItem(stringResource(R.string.watch_app_not_installed), false)
         }
     )
 

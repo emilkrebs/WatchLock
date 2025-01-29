@@ -5,9 +5,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -30,9 +28,9 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         preferences = Preferences(this)
-        
+
         setContent {
-            WatchLockTheme {
+            WatchLockTheme (dynamicColor = true) {
                 MobileApp(this)
             }
         }
@@ -53,22 +51,19 @@ fun MobileAppPreview() {
 fun MobileApp(context: FragmentActivity) {
     val navController = rememberNavController()
 
-
-    WatchLockTheme {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            NavHost(
-                navController = navController,
-                startDestination = "home",
-                enterTransition = enterTransition,
-                exitTransition =  exitTransition,
-                modifier = Modifier.padding(innerPadding)
-            ) {
-                composable("home") {
-                    HomeScreen(context, navController)
-                }
-                composable("settings") {
-                    SettingsScreen(context, navController)
-                }
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "home",
+            enterTransition = enterTransition,
+            exitTransition =  exitTransition,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("home") {
+                HomeScreen(context, navController)
+            }
+            composable("settings") {
+                SettingsScreen(context, navController)
             }
         }
     }
