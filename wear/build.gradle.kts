@@ -9,6 +9,14 @@ val versionMinor = 3
 val versionPatch = 5
 
 android {
+    signingConfigs {
+        create("release") {
+            storeFile = file("E:\\WatchLock_Keystore.jks")
+            storePassword = "u#hLARP48yZfhg"
+            keyAlias = "emilkrebs"
+            keyPassword = "GifHgG!X9@zEB5"
+        }
+    }
     namespace = "com.emilkrebs.watchlock"
     compileSdk = 35
 
@@ -33,6 +41,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
 
         getByName("debug") {

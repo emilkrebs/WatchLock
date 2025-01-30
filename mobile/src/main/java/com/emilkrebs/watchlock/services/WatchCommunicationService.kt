@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.wear.remote.interactions.RemoteActivityHelper
+import com.emilkrebs.watchlock.R
 import com.emilkrebs.watchlock.receivers.AdminReceiver
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
@@ -15,6 +16,7 @@ import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.tasks.await
+
 
 class WatchCommunicationService(private val context: Context) {
     private var devicePolicyManager: DevicePolicyManager =
@@ -32,7 +34,7 @@ class WatchCommunicationService(private val context: Context) {
                     remoteActivityHelper.startRemoteActivity(
                         Intent(Intent.ACTION_VIEW)
                             .setData(
-                                Uri.parse("http://play.google.com/store/apps/details?id=com.emilkrebs.watchlock")
+                                Uri.parse(context.getString(R.string.play_store_link))
                             )
                             .addCategory(Intent.CATEGORY_BROWSABLE),
                         nodes.first()
@@ -50,7 +52,6 @@ class WatchCommunicationService(private val context: Context) {
             val capabilityInfo = Wearable.getCapabilityClient(context)
                 .getCapability(capabilityName, CapabilityClient.FILTER_REACHABLE)
                 .await()
-            Log.d("WatchCommunicationService", "isWearAppInstalled connected nodes: ${capabilityInfo.nodes}")
             return capabilityInfo.nodes.isNotEmpty()
         }
 

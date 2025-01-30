@@ -62,4 +62,6 @@
     <string name="watch_app_not_installed">Watch App Missing</string>
     <string name="watchlock_active">WatchLock Active</string>
     <string name="watchlock_inactive">WatchLock Inactive</string>
+
+    <string name="play_store_link" translatable="false">http://play.google.com/store/apps/details?id=com.emilkrebs.watchlock</string>
 </resources>
