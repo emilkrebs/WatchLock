@@ -14,6 +14,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -42,6 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -81,17 +83,20 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
     var adminActive by remember { mutableStateOf(isAdminActive(context)) }
     var watchLockEnabled by remember { mutableStateOf(preferences.isWatchLockEnabled()) }
 
+    var retry by remember { mutableIntStateOf(0) }
+
+
     val pingTimeoutRunnable = Runnable {
         if (pingStatus == PingStatus.PENDING) {
             pingStatus = PingStatus.FAILED
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(retry) {
         // Check if the watch is connected
         watchConnected = WatchCommunicationService.isWatchConnected(context)
         if (watchConnected) {
-            isWearAppInstalled = WatchCommunicationService.isWearAppInstalled(context, "com.emilkrebs.watchlock")
+            isWearAppInstalled = WatchCommunicationService.isWearAppInstalled(context)
         }
     }
 
@@ -109,7 +114,10 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
     OnLifecycleEvent { _, event ->
         when (event) {
             Lifecycle.Event.ON_RESUME -> {
-                if (!isPreview) { adminActive = isAdminActive(context) }
+                if(!isPreview) {
+                    adminActive = isAdminActive(context)
+                }
+                retry++
             }
 
             Lifecycle.Event.ON_START -> {
@@ -126,7 +134,7 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
 
 
     Surface(
-        modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
+        modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background,
     ) {
         Column(
             modifier = Modifier.fillMaxSize()

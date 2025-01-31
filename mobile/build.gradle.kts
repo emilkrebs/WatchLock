@@ -6,17 +6,9 @@ plugins {
 
 val versionMayor = 1
 val versionMinor = 3
-val versionPatch = 5
+val versionPatch = 6
 
 android {
-    signingConfigs {
-        create("release") {
-            storeFile = file("E:\\WatchLock_Keystore.jks")
-            storePassword = "u#hLARP48yZfhg"
-            keyAlias = "emilkrebs"
-            keyPassword = "GifHgG!X9@zEB5"
-        }
-    }
     namespace = "com.emilkrebs.watchlock"
     compileSdk = 35
 
@@ -32,6 +24,16 @@ android {
             useSupportLibrary = true
         }
     }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("watchlock.keystore")
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("KEY_PASSWORD")
+        }
+    }
+
 
     buildTypes {
         getByName("release") {

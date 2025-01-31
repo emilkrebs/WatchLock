@@ -4,13 +4,22 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
+import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.wear.remote.interactions.RemoteActivityHelper
+import com.emilkrebs.watchlock.R
 import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationServiceDefaults.Companion.LOCK_STATUS_PATH
 import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationServiceDefaults.Companion.REQUEST_PATH
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.Wearable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.tasks.await
 
+const val CAPABILITY_NAME = "com.emilkrebs.watchlock"
 
 /**
  * A service that handles communication with the phone
@@ -19,10 +28,34 @@ class PhoneCommunicationService(private val context: Context) {
 
     companion object {
 
-        fun isPhoneConnected(context: Context, onConnected: (Boolean) -> Unit) {
+        fun openPlayStoreOnWatch(context: Context) {
             getNodes(context) { nodes ->
-                onConnected(nodes.isNotEmpty())
+                if (nodes.isNotEmpty()) {
+                    val remoteActivityHelper =
+                        RemoteActivityHelper(context, Dispatchers.IO.asExecutor())
+
+                    remoteActivityHelper.startRemoteActivity(
+                        Intent(Intent.ACTION_VIEW)
+                            .setData(
+                                Uri.parse(context.getString(R.string.play_store_link))
+                            )
+                            .addCategory(Intent.CATEGORY_BROWSABLE),
+                        nodes.first()
+                    )
+
+                }
             }
+        }
+        suspend fun isWatchLockInstalled(context: Context): Boolean {
+            val capabilityInfo = Wearable.getCapabilityClient(context)
+                .getCapability(CAPABILITY_NAME, CapabilityClient.FILTER_REACHABLE)
+                .await()
+            Log.d("WatchCommunicationService", "Capability Info: $capabilityInfo")
+            return capabilityInfo.nodes.isNotEmpty()
+        }
+
+        suspend fun isPhoneConnected(context: Context): Boolean {
+            return Wearable.getNodeClient(context).connectedNodes.await().isNotEmpty()
         }
 
         fun getNodes(context: Context, onNodesReceived: (Collection<String>) -> Unit) {

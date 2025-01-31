@@ -4,8 +4,12 @@
     <string name="lock_phone">Lock Phone</string>
     <string name="retry">Retry</string>
     <string name="no_phone_connected">No Phone Connected</string>
+    <string name="watchlock_not_installed">WatchLock missing the phone</string>
 
     <string name="phone_locked">Phone Locked</string>
     <string name="phone_unlocked">Phone Unlocked</string>
     <string name="loading">Loading…</string>
+
+
+    <string name="play_store_link" translatable="false">http://play.google.com/store/apps/details?id=com.emilkrebs.watchlock</string>
 </resources>

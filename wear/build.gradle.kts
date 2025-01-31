@@ -6,17 +6,9 @@ plugins {
 
 val versionMayor = 1
 val versionMinor = 3
-val versionPatch = 5
+val versionPatch = 6
 
 android {
-    signingConfigs {
-        create("release") {
-            storeFile = file("E:\\WatchLock_Keystore.jks")
-            storePassword = "u#hLARP48yZfhg"
-            keyAlias = "emilkrebs"
-            keyPassword = "GifHgG!X9@zEB5"
-        }
-    }
     namespace = "com.emilkrebs.watchlock"
     compileSdk = 35
 
@@ -29,6 +21,15 @@ android {
 
         vectorDrawables {
             useSupportLibrary = true
+        }
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("watchlock.keystore")
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("KEY_PASSWORD")
         }
     }
 
@@ -85,10 +86,12 @@ dependencies {
     implementation(libs.androidx.compose.ui.ui.tooling.preview2)
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.material.icons.extended)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.wear.remote.interactions)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.ui.tooling)

@@ -18,6 +18,8 @@ import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.tasks.await
 
 
+const val CAPABILITY_NAME = "com.emilkrebs.watchlock"
+
 class WatchCommunicationService(private val context: Context) {
     private var devicePolicyManager: DevicePolicyManager =
         context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
@@ -48,9 +50,9 @@ class WatchCommunicationService(private val context: Context) {
             return Wearable.getNodeClient(context).connectedNodes.await().isNotEmpty()
         }
 
-        suspend fun isWearAppInstalled(context: Context, capabilityName: String): Boolean {
+        suspend fun isWearAppInstalled(context: Context): Boolean {
             val capabilityInfo = Wearable.getCapabilityClient(context)
-                .getCapability(capabilityName, CapabilityClient.FILTER_REACHABLE)
+                .getCapability(CAPABILITY_NAME, CapabilityClient.FILTER_REACHABLE)
                 .await()
             return capabilityInfo.nodes.isNotEmpty()
         }

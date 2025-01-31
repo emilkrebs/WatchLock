@@ -11,6 +11,8 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -21,6 +23,7 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,6 +44,7 @@ import com.emilkrebs.watchlock.presentation.services.LockStatus
 import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationService
 import com.emilkrebs.watchlock.presentation.theme.WatchLockTheme
 import kotlinx.coroutines.delay
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,23 +80,29 @@ fun Preview(context: Context = LocalContext.current) {
 @Composable
 fun WearApp(context: Context) {
     var isConnected by remember { mutableStateOf(false) }
+    var isWatchInstalled by remember { mutableStateOf(false) }
+    var retry by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(Unit) {
-        PhoneCommunicationService.isPhoneConnected(context) { connected ->
-            isConnected = connected
+    LaunchedEffect(retry) {
+        isConnected = PhoneCommunicationService.isPhoneConnected(context)
+        if(isConnected) {
+            isWatchInstalled = PhoneCommunicationService.isWatchLockInstalled(context)
         }
     }
 
-    if (isConnected) {
+    if (isConnected && isWatchInstalled) {
         Connected(context)
     } else {
-        NotConnected {
-            PhoneCommunicationService.isPhoneConnected(context) { connected ->
-                isConnected = connected
+        NotConnected (
+            message = if(isConnected) stringResource(R.string.watchlock_not_installed) else stringResource(R.string.no_phone_connected),
+            onRetry = {
+                if(!isWatchInstalled && isConnected) {
+                    PhoneCommunicationService.openPlayStoreOnWatch(context)
+                }
+                retry++
             }
-        }
+        )
     }
-
 }
 
 @Composable
@@ -114,7 +125,7 @@ fun Connected(context: Context) {
 
 @Composable
 @Preview
-fun NotConnected(onRetry: () -> Unit = {}) {
+fun NotConnected(message: String = "Phone not Connected", onRetry: () -> Unit = {}) {
     WatchLockTheme {
         Column(
             modifier = Modifier
@@ -125,11 +136,13 @@ fun NotConnected(onRetry: () -> Unit = {}) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = stringResource(R.string.no_phone_connected),
+                text = message,
                 color = MaterialTheme.colors.onBackground,
-                fontSize = 16.sp
+                textAlign = TextAlign.Center,
+                fontSize = 16.sp,
+                modifier = Modifier.padding(16.dp)
             )
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Chip(onClick = onRetry,
                 label = {
                     Text(
