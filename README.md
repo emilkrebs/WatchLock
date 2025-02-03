@@ -8,8 +8,8 @@
 </div>
 
 <div id="badges" align="center">
-
-[![GitHub Latest Release)](https://img.shields.io/github/v/release/emilkrebs/WatchLock?logo=github)](https://github.com/emilkrebs/WatchLock/releases/latest)
+  
+![Play Store](https://img.shields.io/badge/Install%20Now-05122A?style=flat&logo=android)
 
 </div>
 <hr>
