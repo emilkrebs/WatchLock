@@ -6,6 +6,8 @@
     <string name="no_phone_connected">No Phone Connected</string>
     <string name="watchlock_not_installed">WatchLock missing the phone</string>
 
+    <string name="about">About</string>
+
     <string name="phone_locked">Phone Locked</string>
     <string name="phone_unlocked">Phone Unlocked</string>
     <string name="loading">Loading…</string>

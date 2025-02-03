@@ -5,6 +5,8 @@
     <string name="no_phone_connected">Kein Telefon verbunden</string>
     <string name="watchlock_not_installed">WatchLock fehlt auf dem Telefon</string>
 
+    <string name="about">Info</string>
+
     <string name="phone_locked">Telefon gesperrt</string>
     <string name="phone_unlocked">Telefon entsperrt</string>
     <string name="loading">Laden…</string>

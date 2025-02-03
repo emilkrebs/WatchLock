@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,15 +8,23 @@ plugins {
 
 val versionMayor = 1
 val versionMinor = 3
-val versionPatch = 6
+val versionPatch = 7
+
+val keystoreProperties = kotlin.run {
+    val file = rootProject.file("keystore.properties")
+    Properties().apply {
+        load(file.inputStream())
+    }
+}
 
 android {
     namespace = "com.emilkrebs.watchlock"
     compileSdk = 35
 
+
     defaultConfig {
         applicationId = "com.emilkrebs.watchlock"
-        minSdk = 33
+        minSdk = 30
         targetSdk = 35
         versionCode = 200000 + versionMayor * 10000 + versionMinor * 100 + versionPatch
         versionName = "$versionMayor.$versionMinor.$versionPatch"
@@ -27,24 +37,24 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("watchlock.keystore")
-            storePassword = System.getenv("KEYSTORE_PASSWORD")
-            keyAlias = System.getenv("KEY_ALIAS")
-            keyPassword = System.getenv("KEY_PASSWORD")
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
         }
     }
 
 
     buildTypes {
-        getByName("release") {
+        release {
             isDebuggable = false
             isMinifyEnabled = true
-            isShrinkResources = true
+            isShrinkResources = false // todo: make shrinkResources true without any issues
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("release")
         }
 
-        getByName("debug") {
+        debug {
             isMinifyEnabled = false
             isDebuggable = true
             signingConfig = signingConfigs.getByName("debug")
