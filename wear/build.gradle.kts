@@ -24,7 +24,7 @@ android {
     defaultConfig {
         applicationId = "com.emilkrebs.watchlock"
         minSdk = 30
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 100000 + versionMayor * 10000 + versionMinor * 100 + versionPatch
         versionName = "$versionMayor.$versionMinor.$versionPatch"
 

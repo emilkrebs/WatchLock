@@ -13,6 +13,8 @@
 .externalNativeBuild
 .cxx
 local.properties
-keystore.properties
-.env
+
+# IMPORTANT: Do not store your keys in the git history
 .jks
+.env
+keystore.properties
