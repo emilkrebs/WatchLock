@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="lock_phone">Telefon sperren</string>
-    <string name="retry">Erneut versuchen</string>
-    <string name="no_phone_connected">Kein Telefon verbunden</string>
-    <string name="watchlock_not_installed">WatchLock fehlt auf dem Telefon</string>
-
     <string name="about">Info</string>
-
+    <string name="check_for_updates">Nach Updates suchen</string>
+    <string name="check_your_phone">Überprüfen Sie Ihr Telefon</string>
+    <string name="loading">Laden…</string>
+    <string name="lock_phone">Telefon sperren</string>
+    <string name="no_phone_connected">Kein Telefon verbunden</string>
     <string name="phone_locked">Telefon gesperrt</string>
     <string name="phone_unlocked">Telefon entsperrt</string>
-    <string name="loading">Laden…</string>
+    <string name="retry">Erneut versuchen</string>
+    <string name="watchlock_not_installed">WatchLock fehlt auf dem Telefon</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.emilkrebs.watchlock.presentation
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,7 +37,6 @@ import androidx.wear.compose.material.Text
 import com.emilkrebs.watchlock.R
 import com.emilkrebs.watchlock.presentation.services.LockStatus
 import com.emilkrebs.watchlock.presentation.services.PhoneCommunicationService
-import com.emilkrebs.watchlock.presentation.theme.WatchLockTheme
 import kotlinx.coroutines.delay
 
 
@@ -63,6 +63,7 @@ fun HomeScreen(context: Context) {
             onRetry = {
                 if (!isWatchInstalled && isConnected) {
                     PhoneCommunicationService.openPlayStoreOnWatch(context)
+                    Toast.makeText(context, context.getString(R.string.check_your_phone), Toast.LENGTH_SHORT).show()
                 }
                 retry++
             }
@@ -104,7 +105,6 @@ fun NotConnected(message: String = "Phone not Connected", onRetry: () -> Unit = 
             fontSize = 16.sp,
             modifier = Modifier.padding(16.dp)
         )
-        Spacer(modifier = Modifier.height(12.dp))
         Chip(onClick = onRetry,
             label = {
                 Text(

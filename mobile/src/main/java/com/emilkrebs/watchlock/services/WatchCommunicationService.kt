@@ -5,7 +5,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.wear.remote.interactions.RemoteActivityHelper
 import com.emilkrebs.watchlock.R
 import com.emilkrebs.watchlock.receivers.AdminReceiver
@@ -85,32 +84,36 @@ class WatchCommunicationService(private val context: Context) {
         message: Message,
         onComplete: (Boolean, String?) -> Unit = { _, _ -> }
     ) {
-        val messageApiClient = Wearable.getMessageClient(context)
-        getNodes(context) { nodes ->
-            if (nodes.isNotEmpty()) {
-                val tasks = mutableListOf<Task<Int>>()
+        try {
+            val messageApiClient = Wearable.getMessageClient(context)
+            getNodes(context) { nodes ->
+                if (nodes.isNotEmpty()) {
+                    val tasks = mutableListOf<Task<Int>>()
 
-                for (node in nodes) {
-                    val sendMessageTask =
-                        messageApiClient.sendMessage(node, message.path, message.data)
-                            .addOnCompleteListener { task ->
-                                onComplete(
-                                    task.isSuccessful,
-                                    if (!task.isSuccessful) task.exception?.message else null
-                                )
-                            }
+                    for (node in nodes) {
+                        val sendMessageTask =
+                            messageApiClient.sendMessage(node, message.path, message.data)
+                                .addOnCompleteListener { task ->
+                                    onComplete(
+                                        task.isSuccessful,
+                                        if (!task.isSuccessful) task.exception?.message else null
+                                    )
+                                }
 
-                    tasks.add(sendMessageTask)
+                        tasks.add(sendMessageTask)
+                    }
+
+                    // Wait for all tasks to complete before returning.
+                    Tasks.whenAll(tasks).addOnCompleteListener {
+                        // All tasks have completed.
+                    }
+                } else {
+                    onComplete(false, "No connected nodes found.")
                 }
-
-                // Wait for all tasks to complete before returning.
-                Tasks.whenAll(tasks).addOnCompleteListener {
-                    // All tasks have completed.
-
-                }
-            } else {
-                onComplete(false, "No connected nodes found.")
             }
+        }
+        catch (e: Exception) {
+            onComplete(false, e.message)
         }
     }
 
@@ -131,19 +134,12 @@ class WatchCommunicationServiceDefaults {
  * @param path the path of the message
  * @param data the data of the message as a byte array
  */
-class Message(path: String, data: ByteArray) {
-    val path: String
-    val data: ByteArray
+class Message(val path: String, val data: ByteArray) {
 
     companion object {
         fun fromString(path: String, data: String): Message {
             return Message(path, data.toByteArray(Charsets.UTF_8))
         }
-    }
-
-    init {
-        this.path = path
-        this.data = data
     }
 
     override fun toString(): String {

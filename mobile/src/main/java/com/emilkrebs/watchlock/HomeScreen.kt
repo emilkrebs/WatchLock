@@ -14,6 +14,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -51,8 +52,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
@@ -93,9 +96,13 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
 
     LaunchedEffect(retry) {
         // Check if the watch is connected
-        watchConnected = WatchCommunicationService.isWatchConnected(context)
-        if (watchConnected) {
-            isWearAppInstalled = WatchCommunicationService.isWearAppInstalled(context)
+        try {
+            watchConnected = WatchCommunicationService.isWatchConnected(context)
+            if (watchConnected) {
+                isWearAppInstalled = WatchCommunicationService.isWearAppInstalled(context)
+            }
+        } catch (e: Exception) {
+            Log.e("WatchConnection", e.message.toString())
         }
     }
 
@@ -105,7 +112,11 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
             if (intent?.action == ACTION_PING_BROADCAST) {
                 // Handle the broadcast here
                 val pingValue = intent.getBooleanExtra("ping", false)
-                pingStatus = if (pingValue) {  PingStatus.SUCCESS } else { PingStatus.FAILED }
+                pingStatus = if (pingValue) {
+                    PingStatus.SUCCESS
+                } else {
+                    PingStatus.FAILED
+                }
             }
         }
     }
@@ -113,7 +124,7 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
     OnLifecycleEvent { _, event ->
         when (event) {
             Lifecycle.Event.ON_RESUME -> {
-                if(!isPreview) {
+                if (!isPreview) {
                     adminActive = isAdminActive(context)
                 }
                 retry++
@@ -167,6 +178,11 @@ fun HomeScreen(context: FragmentActivity, navController: NavController) {
                     MainButton(adminActive, watchLockEnabled) {
                         if (!isWearAppInstalled) {
                             openPlayStoreOnWatch(context)
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.check_your_watch),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         } else
                             if (!adminActive) {
                                 context.startActivity(getAdminDialogIntent(context))
@@ -284,17 +300,25 @@ fun CheckList(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     // ready and inactive
-                    !watchLockEnabled && adminActive -> Text(
-                        text = stringResource(R.string.ready_and_inactive_explanation),
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    !watchLockEnabled && adminActive -> {
+                        Text(
+                            text = stringResource(R.string.ready_and_inactive_explanation),
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.error
+                        )
 
-                    else -> Text(
-                        text = stringResource(R.string.not_ready_explanation),
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.error
-                    )
+                        HelpText(stringResource(R.string.ready_and_inactive_help))
+                    }
+
+                    else -> {
+                        Text(
+                            text = stringResource(R.string.not_ready_explanation),
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.error
+                        )
+
+                        HelpText(stringResource(R.string.not_ready_help))
+                    }
                 }
             }
 
@@ -398,4 +422,49 @@ fun PingButton(pingStatus: PingStatus, onClick: () -> Unit) {
         }
         Text(buttonText)
     }
+}
+
+@Composable
+fun HelpText(message: String) {
+    var dialogOpen by remember { mutableStateOf(false) }
+
+    if (dialogOpen) {
+        Dialog(
+            onDismissRequest = { dialogOpen = false },
+        )
+        {
+            Card {
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = message,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+
+                    Button(
+                        onClick = { dialogOpen = false },
+                        modifier = Modifier
+                            .padding(top = 8.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.okay),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    Text(
+        text = stringResource(R.string.help),
+        color = MaterialTheme.colorScheme.onBackground,
+        textDecoration = TextDecoration.Underline,
+        fontSize = 12.sp,
+        modifier = Modifier.clickable { dialogOpen = !dialogOpen }
+    )
 }

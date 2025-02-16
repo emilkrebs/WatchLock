@@ -8,7 +8,7 @@ plugins {
 
 val versionMayor = 1
 val versionMinor = 3
-val versionPatch = 7
+val versionPatch = 8
 
 val keystoreProperties = kotlin.run {
     val file = rootProject.file("keystore.properties")

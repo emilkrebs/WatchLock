@@ -1,6 +1,8 @@
 package com.emilkrebs.watchlock.presentation
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -9,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import com.emilkrebs.watchlock.R
@@ -32,6 +36,24 @@ fun SettingsScreen(context: Context) {
             text = "WatchLock ${getVersionName(context)} (${getVersionCode(context)})",
             style = MaterialTheme.typography.body1,
             modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        // check for updates
+        Chip(onClick = {
+            context.startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse(context.getString(R.string.play_store_link))
+                )
+            )
+        },
+            label = {
+                Text(
+                    text = stringResource(id = R.string.check_for_updates),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colors.onBackground
+                )
+            }
         )
 
     }

@@ -1,5 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="about" tools:ignore="MissingTranslation">About</string>
+
+    <string name="app_name" translatable="false">WatchLock</string>
+    <string name="github" translatable="false">GitHub</string>
+    <string name="github_link" translatable="false">https://github.com/emilkrebs/WatchLock/releases/latest</string>
+    <string name="play_store_link" translatable="false">http://play.google.com/store/apps/details?id=com.emilkrebs.watchlock</string>
+
+    <string name="about">About</string>
     <string name="activate_watchlock">Activate</string>
     <string name="admin_active">Admin Active</string>
     <string name="admin_disabled">Admin disabled</string>
@@ -7,13 +13,13 @@
     <string name="admin_explanation">WatchLock requires the device administrator permission to lock the screen.</string>
     <string name="admin_inactive">Admin Inactive</string>
     <string name="admin_status_error">There was an error checking the admin status. Please try again.</string>
-    <string name="app_name" translatable="false">WatchLock</string>
     <string name="back">Back</string>
     <string name="back_to_previous_screen">Back to previous screen</string>
     <string name="biometric_subtitle">You need to authenticate using your fingerprint or PIN to continue.</string>
     <string name="cancel">Cancel</string>
     <string name="caution">Caution</string>
     <string name="check_for_updates">Check for updates</string>
+    <string name="check_your_watch">→ Check your watch</string>
     <string name="deactivate_watchlock">Deactivate</string>
     <string name="disable_watchlock">Disable WatchLock</string>
     <string name="enable_watchlock">Enable WatchLock</string>
@@ -22,9 +28,7 @@
     <string name="failed">Failed</string>
     <string name="fetching_latest_version">Fetching latest version…</string>
     <string name="general">General</string>
-    <string name="github" translatable="false">GitHub</string>
-    <string name="github_link" translatable="false">https://github.com/emilkrebs/WatchLock/releases/latest</string>
-    <string name="github_release_link" translatable="false">https://github.com/emilkrebs/WatchLock/releases/latest</string>
+    <string name="help">Help</string>
     <string name="latest_version">Latest version</string>
     <string name="latest_version_available">Latest version available: %1$s</string>
     <string name="latest_version_details">v%1$s (Current: v%2$s)</string>
@@ -36,6 +40,7 @@
     <string name="nearby_interval_details">The interval in which the phone checks if the watch is nearby.</string>
     <string name="no_watch_connected">No Watch Connected</string>
     <string name="not_ready_explanation">Not Ready</string>
+    <string name="not_ready_help">Please make sure you have a WearOS watch connected with the latest version of WatchLock installed.</string>
     <string name="okay">Okay</string>
     <string name="open_the_settings">Open the Settings</string>
     <string name="ping_already_pending">Ping already requested…</string>
@@ -45,23 +50,22 @@
     <string name="ping_watch">Ping Watch</string>
     <string name="ready_and_active_explanation">Ready and Active</string>
     <string name="ready_and_inactive_explanation">Ready and Inactive</string>
-    <string name="restart_services">Restart Services</string>
-    <string name="restart_services_details">Restart Services in case something is not working as expected.</string>
+    <string name="ready_and_inactive_help">Everything is setup correctly. Click on the button below to activate WatchLock.</string>
     <string name="reset">Reset</string>
     <string name="reset_watchlock">Reset WatchLock</string>
     <string name="reset_watchlock_details">Reset WatchLock settings and revoke admin privileges.</string>
     <string name="reset_watchlock_warning">Are you sure you want to reset the WatchLock settings and revoke the admin permissions?\nThis action will cause WatchLock to restart.</string>
-    <string name="settings">Settings</string>
-    <string name="success">Success</string>
+    <string name="restart_services">Restart Services</string>
+    <string name="restart_services_details">Restart Services in case something is not working as expected.</string>
     <string name="services_restart_failed">Failed to restart services.</string>
     <string name="services_restart_success">Services restarted successfully.</string>
+    <string name="settings">Settings</string>
+    <string name="success">Success</string>
     <string name="version_text">WatchLock Version %1$s (%2$s)</string>
     <string name="view_source">View the source code on GitHub.</string>
-    <string name="watch_connected">Watch Connected</string>
     <string name="watch_app_installed">Watch App Installed</string>
     <string name="watch_app_not_installed">Watch App Missing</string>
+    <string name="watch_connected">Watch Connected</string>
     <string name="watchlock_active">WatchLock Active</string>
     <string name="watchlock_inactive">WatchLock Inactive</string>
-
-    <string name="play_store_link" translatable="false">http://play.google.com/store/apps/details?id=com.emilkrebs.watchlock</string>
 </resources>

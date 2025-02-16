@@ -1,5 +1,5 @@
 <resources>
-    <string name="about">Über</string>
+    <string name="about">Information</string>
     <string name="activate_watchlock">Aktivieren</string>
     <string name="admin_active">Admin aktiv</string>
     <string name="admin_disabled">Admin deaktiviert</string>
@@ -13,6 +13,7 @@
     <string name="cancel">Abbrechen</string>
     <string name="caution">Vorsicht</string>
     <string name="check_for_updates">Nach Updates suchen</string>
+    <string name="check_your_watch">→ An die Uhr gesendet.</string>
     <string name="deactivate_watchlock">Deaktivieren</string>
     <string name="disable_watchlock">WatchLock deaktivieren</string>
     <string name="enable_watchlock">WatchLock aktivieren</string>
@@ -21,6 +22,7 @@
     <string name="failed">Gescheitert</string>
     <string name="fetching_latest_version">Lade neueste Version…</string>
     <string name="general">Allgemein</string>
+    <string name="help">Hilfe</string>
     <string name="latest_version">Neueste Version</string>
     <string name="latest_version_available">Neueste Version verfügbar: %1$s</string>
     <string name="latest_version_details">v%1$s (Aktuell: v%2$s)</string>
@@ -32,6 +34,7 @@
     <string name="nearby_interval_details">Das Intervall, in dem das Telefon prüft, ob die Uhr in der Nähe ist.</string>
     <string name="no_watch_connected">Keine Uhr verbunden</string>
     <string name="not_ready_explanation">Nicht bereit</string>
+    <string name="not_ready_help">Bitte stellen Sie sicher, dass eine WearOS-Uhr mit installierter WatchLock verbunden ist.</string>
     <string name="okay">Okay</string>
     <string name="open_the_settings">Einstellungen öffnen</string>
     <string name="ping_already_pending">Ping bereits angefordert…</string>
@@ -41,21 +44,22 @@
     <string name="ping_watch">Uhr anpingen</string>
     <string name="ready_and_active_explanation">Bereit und aktiv</string>
     <string name="ready_and_inactive_explanation">Bereit und inaktiv</string>
-    <string name="restart_services">Dienste neu starten</string>
-    <string name="restart_services_details">Dienste neu starten falls etwas nicht wie erwartet funktioniert.</string>
+    <string name="ready_and_inactive_help">Alles ist korrekt eingerichtet. Klicken Sie auf die Schaltfläche unten, um WatchLock zu aktivieren.</string>
     <string name="reset">Zurücksetzen</string>
     <string name="reset_watchlock">WatchLock zurücksetzen</string>
     <string name="reset_watchlock_details">Einstellungen von WatchLock zurücksetzen und Administratorrechte widerrufen.</string>
     <string name="reset_watchlock_warning">Möchten Sie die WatchLock-Einstellungen wirklich zurücksetzen und die Administratorrechte widerrufen?\nDies führt zum Neustart von WatchLock.</string>
-    <string name="settings">Einstellungen</string>
-    <string name="success">Erfolg</string>
+    <string name="restart_services">Dienste neu starten</string>
+    <string name="restart_services_details">Dienste neu starten falls etwas nicht wie erwartet funktioniert.</string>
     <string name="services_restart_failed">Dienste konnten nicht neu gestartet werden.</string>
     <string name="services_restart_success">Dienste wurden erfolgreich neu gestartet.</string>
+    <string name="settings">Einstellungen</string>
+    <string name="success">Erfolg</string>
     <string name="version_text">WatchLock Version %1$s (%2$s)</string>
     <string name="view_source">Quellcode auf GitHub anzeigen.</string>
-    <string name="watch_connected">Uhr verbunden</string>
     <string name="watch_app_installed">Watch-App installiert</string>
     <string name="watch_app_not_installed">Watch-App fehlt</string>
+    <string name="watch_connected">Uhr verbunden</string>
     <string name="watchlock_active">WatchLock aktiv</string>
     <string name="watchlock_inactive">WatchLock inaktiv</string>
 </resources>

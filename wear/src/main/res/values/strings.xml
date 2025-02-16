@@ -1,17 +1,15 @@
 <resources>
-    <string name="app_name" translatable="false">WatchLock</string>
-
-    <string name="lock_phone">Lock Phone</string>
-    <string name="retry">Retry</string>
-    <string name="no_phone_connected">No Phone Connected</string>
-    <string name="watchlock_not_installed">WatchLock missing the phone</string>
+    <string name="play_store_link" translatable="false">http://play.google.com/store/apps/details?id=com.emilkrebs.watchlock</string>
 
     <string name="about">About</string>
-
+    <string name="app_name" translatable="false">WatchLock</string>
+    <string name="check_for_updates">Check for updates</string>
+    <string name="check_your_phone">Check your phone</string>
+    <string name="loading">Loading…</string>
+    <string name="lock_phone">Lock Phone</string>
+    <string name="no_phone_connected">No Phone Connected</string>
     <string name="phone_locked">Phone Locked</string>
     <string name="phone_unlocked">Phone Unlocked</string>
-    <string name="loading">Loading…</string>
-
-
-    <string name="play_store_link" translatable="false">http://play.google.com/store/apps/details?id=com.emilkrebs.watchlock</string>
+    <string name="retry">Retry</string>
+    <string name="watchlock_not_installed">WatchLock missing the phone</string>
 </resources>
