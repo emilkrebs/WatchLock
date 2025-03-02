@@ -25,6 +25,11 @@ Languages: English, German
 
 **Tip: Bind double-tapping the home button to WatchLock so it opens the application.**
 
+### Become a tester (places limited) 🚀💪
+
+1. Join the official [Google Group](https://groups.google.com/g/watchlock)
+2. Download WatchLock on [Google Play](https://play.google.com/store/apps/details?id=com.emilkrebs.watchlock)
+
 ---
 
 ![Banner](https://github.com/emilkrebs/WatchLock/assets/68400102/1435b089-955e-4b2b-a405-778caba8b72d)
